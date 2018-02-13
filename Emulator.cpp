@@ -724,9 +724,6 @@ void Group_1(BYTE opcode)
 			break;
 		//END STO
 
-		//START ADD
-		//END ADD
-
 		//START ADD //check add --check if carry flag set and add 1 for carry info check getflags
 		//MODIFIED FLAG POSITION
 		case 0x23://ADD A B
@@ -859,7 +856,8 @@ void Group_1(BYTE opcode)
 			//Registers[REGISTER_A] = (BYTE)temp_word;
 			break;
 
-			//END ADD
+		//END ADD
+
 		//START SUB
 		//END SUB
 
@@ -1137,275 +1135,131 @@ void Group_1(BYTE opcode)
 		//START TSTA
 		//END TSTA
 
-		//START STX
-		case 0x02://STX abs
+		//START INC
+		case 0x92://inc abs
 			HB = fetch();
 			LB = fetch();
 			address += (WORD)((WORD)HB << 8) + LB;
-
-			//data = fetch();
-			//Memory[data] = Registers[REGISTER_A];
 			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address] = Registers[REGISTER_X];
+				Memory[address]++;
 			}
-
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
 			break;
 
-		case 0x12://STX abs X
+		case 0xA2://inc abs x
 			address += Index_Registers[REGISTER_X];
 			HB = fetch();
 			LB = fetch();
 			address += (WORD)((WORD)HB << 8) + LB;
 			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address] = Registers[REGISTER_X];
+				Memory[address]++;
 			}
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
 			break;
 
-		case 0x22://STX abs Y
+		case 0xB2://inc abs y
 			address += Index_Registers[REGISTER_Y];
 			HB = fetch();
 			LB = fetch();
 			address += (WORD)((WORD)HB << 8) + LB;
 			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address] = Registers[REGISTER_X];
+				Memory[address]++;
 			}
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
 			break;
 
-		case 0x32://STX abs X Y
+		case 0xC2://inc abs x y
 			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8) + Index_Registers[REGISTER_X];
 			HB = fetch();
 			LB = fetch();
 			address += (WORD)((WORD)HB << 8) + LB;
 			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address] = Registers[REGISTER_X];
+				Memory[address]++;
 			}
 			set_flag_n(Registers[REGISTER_A]);
 			set_flag_z(Registers[REGISTER_A]);
 			break;
+			//END INC
 
-		case 0x42://STX (ind) abs X Y
+			//START INCA
+		case 0xD2:
+			Registers[REGISTER_A]++;
+			set_flag_n(Registers[REGISTER_A]);
+			set_flag_z(Registers[REGISTER_A]);
+			break;
+			//END INCA
+
+			//START DEC
+		case 0x93://inc abs
 			HB = fetch();
 			LB = fetch();
 			address += (WORD)((WORD)HB << 8) + LB;
-			HB = Memory[address];
-			LB = Memory[address + 1];
-			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				Memory[address]--;
+			}
+			break;
+
+		case 0xA3://inc abs x
 			address += Index_Registers[REGISTER_X];
-			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8);
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
 			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address] = Registers[REGISTER_X];
+				Memory[address]--;
+			}
+			break;
+
+		case 0xB3://inc abs y
+			address += Index_Registers[REGISTER_Y];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				Memory[address]--;
+			}
+			break;
+
+		case 0xC3://inc abs x y
+			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8) + Index_Registers[REGISTER_X];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				Memory[address]--;
 			}
 			set_flag_n(Registers[REGISTER_A]);
 			set_flag_z(Registers[REGISTER_A]);
 			break;
-		//END STX
+		//END DEC
 
-		//START CSA
-		case 0x0F:
-			Registers[REGISTER_A] = Flags;
-			printf("|%X|", Flags);
+		//START DECA
+		case 0xD3:
+			Registers[REGISTER_A]--;
+			set_flag_n(Registers[REGISTER_A]);
+			set_flag_z(Registers[REGISTER_A]);
 			break;
-		//END CSA
-		//START MAS
-		case 0x0E:
-			Flags = Registers[REGISTER_A];
-			break;
-		//END MAS
+		//END DECA
 
-		//START PUSH
-		case 0x9E:
-			if ((StackPointer >= 1)&& (StackPointer < MEMORY_SIZE)){
-				Memory[StackPointer] = Registers[REGISTER_A];
-				StackPointer--;
-			}
-			break;
-		case 0xAE:
-			break;
-		case 0xBE:
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
-				Memory[StackPointer] = Registers[REGISTER_B];
-				StackPointer--;
-			}
-			break;
-		case 0xCE:
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
-				Memory[StackPointer] = Registers[REGISTER_C];
-				StackPointer--;
-			}
-			break;
-		case 0xDE:
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
-				Memory[StackPointer] = Registers[REGISTER_D];
-				StackPointer--;
-			}
-			break;
-		case 0xEE:
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
-				Memory[StackPointer] = Registers[REGISTER_E];
-				StackPointer--;
-			}
-			break;
-		case 0xFE:
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
-				Memory[StackPointer] = Registers[REGISTER_F];
-				StackPointer--;
-			}
-			break;
-		//END PUSH
+		//START RCR
+		//END RCR
 
-		//START POP
-		case 0x9F:
-			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE -1)) {
-				StackPointer++;
-				Registers[REGISTER_A] = Memory[StackPointer];
-			}
-			break;
-		case 0xAF:
-			break;
-		case 0xBF:
-			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
-				StackPointer++;
-				Registers[REGISTER_B] = Memory[StackPointer];
-			}
-			break;
-		case 0xCF:
-			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
-				StackPointer++;
-				Registers[REGISTER_C] = Memory[StackPointer];
-			}
-			break;
-		case 0xDF:
-			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
-				StackPointer++;
-				Registers[REGISTER_D] = Memory[StackPointer];
-			}
-			break;
-		case 0xEF:
-			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
-				StackPointer++;
-				Registers[REGISTER_E] = Memory[StackPointer];
-			}
-			break;
-		case 0xFF:
-			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
-				StackPointer++;
-				Registers[REGISTER_F] = Memory[StackPointer];
-			}
-			break;
-		//END POP
+		//START RCRA
+		//END RCRA
 
-		//START BRA
-		case 0xF0:
-			HB = fetch();
-			LB = fetch();
-			offset = (WORD)LB;
-			if ((offset & 0x80) != 0) {
-				offset += 0xFF00;
-			}
-			address = ProgramCounter + offset;//CHECK
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				//ProgramCounter = Memory[address];
-				ProgramCounter = address;
-			}
-			break;
-		//END BRA
+		//START RLC
+		//END RLC
 
-		//START BCC
-		case 0xF1:
-			HB = fetch();
-			LB = fetch();
-			offset = (WORD)LB;
-			if ((offset & 0x80) != 0) {
-				offset += 0xFF00;
-			}
-			address = ProgramCounter + offset;//CHECK
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				//ProgramCounter = Memory[address];
-				if ((Flags & FLAG_C) == 0) {
-					ProgramCounter = address;
-				}
-			}
-			break;
-		//END BCC
+		//START RLCA
+		//END RLCA
 
-		//START BCS
-		case 0xF2:
-			HB = fetch();
-			LB = fetch();
-			offset = (WORD)LB;
-			if ((offset & 0x80) != 0) {
-				offset += 0xFF00;
-			}
-			address = ProgramCounter + offset;//CHECK
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				//ProgramCounter = Memory[address];
-				if ((Flags & FLAG_C) != 0) {
-					ProgramCounter = address;
-				}
-			}
-			break;
-		//END BCS
+		//START ASL
+		//END ASL
 
-		//START BNE
-		//END BNE
+		//START ASLA
+		//END ASLA
 
-		//START BEQ
-		//END BEQ
+		//START SAR
+		//END SAR
 
-		//START BVC
-		//END BVC
-
-		//START BVS
-		//END BVS
-
-		//START BMI
-		//END BMI
-
-		//START BPL
-		//END BPL
-
-		//START BGE
-		//END BGE
-
-		//START BLE
-		//END BLE
-
-		//START BGT
-		//END BGT
-
-		//START BLT
-		//END BLT
-
-		//START BGT
-		//END BGT
-
-		//START COMA
-		case 0xD8://COMA
-			//Registers[REGISTER_A] = Registers[REGISTER_A] ^ 0xFF;
-			//data = Registers[REGISTER_A];
-			temp_word = ~Registers[REGISTER_A];// data;//bit flip
-			//temp_word = Registers[REGISTER_A] ^ 0xFF;
-			//Registers[REGISTER_A] = (BYTE)temp_word;
-			if (temp_word >= 0x100)//if overflowed set flag
-			{
-				Flags = Flags | FLAG_C;
-			}
-			else {
-				Flags = Flags & (0xFF - FLAG_C);
-			}
-			set_flag_n(temp_word);
-			set_flag_z(temp_word);
-			return;
-		//END COMA
+		//START SARA
+		//END SARA
 
 		//START COM
 		case 0x98://COM ABS
@@ -1495,381 +1349,42 @@ void Group_1(BYTE opcode)
 			set_flag_n(Memory[address]);
 			set_flag_z(Memory[address]);
 			break;
-		//END COM
+			//END COM
 
-		
-		
-
-		//START SUB
-
-		//END SUB
-
-		//START LX
-		case 0x9B://LX A B #
-			//HB = fetch();
-			//lB = fetch();
-			Registers[REGISTER_A] = fetch();
-			Registers[REGISTER_B] = fetch();
-
-			set_flag_n(Registers[REGISTER_A]);//CHECK THIS AS NOT SURE IF ON A OR BOTH
-			set_flag_z(Registers[REGISTER_A]);
-			break;
-		//END LX
-
-		//START INC
-		case 0x92://inc abs
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address]++;
+		//START COMA
+		case 0xD8://COMA
+				  //Registers[REGISTER_A] = Registers[REGISTER_A] ^ 0xFF;
+				  //data = Registers[REGISTER_A];
+			temp_word = ~Registers[REGISTER_A];// data;//bit flip
+											   //temp_word = Registers[REGISTER_A] ^ 0xFF;
+											   //Registers[REGISTER_A] = (BYTE)temp_word;
+			if (temp_word >= 0x100)//if overflowed set flag
+			{
+				Flags = Flags | FLAG_C;
 			}
-			break;
-
-		case 0xA2://inc abs x
-			address += Index_Registers[REGISTER_X];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address]++;
+			else {
+				Flags = Flags & (0xFF - FLAG_C);
 			}
-			break;
+			set_flag_n(temp_word);
+			set_flag_z(temp_word);
+			return;
+		//END COMA
 
-		case 0xB2://inc abs y
-			address += Index_Registers[REGISTER_Y];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address]++;
-			}
-			break;
+		//START RAL
+		//END RAL
 
-		case 0xC2://inc abs x y
-			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8) + Index_Registers[REGISTER_X];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address]++;
-			}
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
-			break;
-		//END INC
+		//START RALA
+		//END RALA
 
-		//START INCA
-		case 0xD2:
-			Registers[REGISTER_A]++;
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
-			break;
-		//END INCA
+		//START ROR
+		//END ROR
 
-		//START DEC
-		case 0x93://inc abs
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address]--;
-			}
-			break;
+		//START RORA
+		//END RORA
 
-		case 0xA3://inc abs x
-			address += Index_Registers[REGISTER_X];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address]--;
-			}
-			break;
-
-		case 0xB3://inc abs y
-			address += Index_Registers[REGISTER_Y];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address]--;
-			}
-			break;
-
-		case 0xC3://inc abs x y
-			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8) + Index_Registers[REGISTER_X];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address]--;
-			}
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
-			break;
-		//END DEC
-		//START DECA
-		case 0xD3:
-			Registers[REGISTER_A]--;
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
-			break;
-		//END DEC
-
-		//START MV //is #
-		case 0x07:
-			Registers[REGISTER_B] = fetch();// Memory[fetch()];
-			break;
-		case 0x08:
-			Registers[REGISTER_C] = fetch();// = Memory[fetch()];
-			break;
-		case 0x09:
-			Registers[REGISTER_D] = fetch();// = Memory[fetch()];
-			break;
-		case 0x0A:
-			Registers[REGISTER_E] = fetch();// = Memory[fetch()];
-			break;
-		case 0x0B:
-			Registers[REGISTER_F] = fetch();// = Memory[fetch()];
-			break;
-		//END MV
-		//START AND
-		//case 0x29:
-		//	WORD regtemp;
-		//	data = fetch();
-		//	for (int i = 0; i < 8; i++) {
-		//
-		//	}
-		//	break;
-			
-
-		//END AND
-
-		//START JMP
-		case 0xEA://chk
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				//ProgramCounter = Memory[address];
-				ProgramCounter = address;
-			}
-			break;
-		//END JMP
-
-		//START JSR
-		case 0xE9:
-			HB = fetch();
-			LB = fetch();
-			address = ((WORD)HB << 8) + (WORD)LB;
-				if ((StackPointer >= 2) && (StackPointer < MEMORY_SIZE)) {
-					Memory[StackPointer] = (BYTE)(ProgramCounter & 0xFF);
-					StackPointer--;
-					Memory[StackPointer] = (BYTE)((ProgramCounter >> 8) & 0xFF);
-					StackPointer--;
-			}
-				ProgramCounter = address;
-			break;
-		//END JSR
-
-		//START RTN
-		case 0xDB:
-			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 2)) {
-				StackPointer++;
-				HB = Memory[StackPointer];
-				StackPointer++;
-				LB = Memory[StackPointer];
-				ProgramCounter = ((WORD)HB << 8) + (WORD)LB;
-			}
-			break;
-		//END RTN
-
-		//START INCA
-		//case 0xD2://INCA
-		//	Registers[REGISTER_A] ++;
-		//	set_flag_n(Registers[REGISTER_A]);
-		//	set_flag_z(Registers[REGISTER_A]);
-		//	break;
-
-		//case 0xE2://INX
-		//	Registers[REGISTER_X] ++;
-		//	set_flag_z(Registers[REGISTER_X]);
-		//	break;
-		//case 0xE4://INCY
-		//	Registers[REGISTER_Y] ++;
-		//	set_flag_z(Registers[REGISTER_Y]);
-		//	break;
-		//END INCA
-		
-
-		//START DEX
-		case 0xE1://may need to check if wraparound
-			Registers[REGISTER_X]--;
-			set_flag_z(Registers[REGISTER_X]);
-		//END DEX
-
-		//START INX
-		case 0xE2://may need to check if wraparound
-			Registers[REGISTER_X]++;
-			set_flag_z(Registers[REGISTER_X]);
-		//END INX
-
-		//START DEY
-		case 0xE3://may need to check if wraparound
-			Registers[REGISTER_Y]--;
-			set_flag_z(Registers[REGISTER_Y]);
-		//END DEY
-
-		//START INCY
-		case 0xE4://may need to check if wraparound
-			Registers[REGISTER_Y]++;
-			set_flag_z(Registers[REGISTER_Y]);
-		//END INCY
-
-		//START MAY
-		case 0x0C:
-			Registers[REGISTER_Y] = Registers[REGISTER_A];
-			set_flag_n(REGISTER_A);
-			break;
-		//END MAY
-
-		//START MYA
-		case 0x0D:
-			Registers[REGISTER_A] = Registers[REGISTER_Y];
-			set_flag_n(REGISTER_Y);
-			set_flag_z(REGISTER_A);
-			break;
-		//END MYA
-
-		//START NOP
-		case 0x73:
-			break;
-		//END NOP
-
-		//START LODS
-		case 0x9D://LODS #
-			data = fetch();
-			StackPointer = data << 8;
-			StackPointer += fetch();
-
-			break;
-		case 0xAD://LODS abs
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE - 1) {
-				StackPointer = (WORD)Memory[address] << 8;
-				StackPointer += Memory[address + 1];
-			}
-			break;
-		case 0xBD://lods abs x
-			address += Index_Registers[REGISTER_X];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE - 1) {
-				StackPointer = (WORD)Memory[address] << 8;
-				StackPointer += Memory[address + 1];
-			}
-			break;
-		case 0xCD://lods abs y
-			address += Index_Registers[REGISTER_Y];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE - 1) {
-				StackPointer = (WORD)Memory[address] << 8;
-				StackPointer += Memory[address + 1];
-			}
-			break;
-		case 0xDD://lods abs x y
-			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8) + Index_Registers[REGISTER_X];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE-1) {
-				StackPointer = (WORD)Memory[address] << 8;
-				StackPointer += Memory[address + 1];
-			}
-			break;
-
-		case 0xED://lods ind abs x y
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			HB = Memory[address];
-			LB = Memory[address + 1];
-			address += (WORD)((WORD)HB << 8) + LB;
-			address += Index_Registers[REGISTER_X];
-			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8);
-			if (address >= 0 && address < MEMORY_SIZE-1) {
-				StackPointer = (WORD)Memory[address] << 8;
-				StackPointer += Memory[address + 1];
-			}
-			//set_flag_n(Registers[REGISTER_A]);
-			//set_flag_z(Registers[REGISTER_A]);
-			break;
-		//END LODS
-
-/*
-if (reg == 0) // msbit set
-{
-Flags = Flags | FLAG_Z;
-}
-else
-{
-Flags = Flags & (0xFF - FLAG_Z);
-}
-*/
-		//START CLC
-		case 0x18:
-			Flags = Flags & (0xFF - FLAG_C);
-			break;
-		//END CLC
-
-		//START SEC
-		case 0x19:
-			Flags = Flags | FLAG_C;
-			break;
-		//END SEC
-		
-		//START CLI
-		case 0x1A:
-			Flags = Flags & (0xFF - FLAG_I);
-			break;
-		//END CLI
-
-		//START STI
-		case 0x1B:
-			Flags = Flags | FLAG_I;
-			break;
-		//END STI
-
-		//START STV
-		case 0x1C:
-			Flags = Flags & (0xFF - FLAG_V);
-			break;
-		//END STV
-
-		//START CLV
-		case 0x1D:
-			Flags = Flags | FLAG_V;
-			break;
-		//END CLV
-
-		//START NOP
-		//END NOP
-
-		//START HLT
-		//END HLT
-
-		//START SWI
-		//END SWI
-
-		//START RTI
-		//END RTI
-
+		//START LD
+		////LD IN GROUP 2
+		//END LD
 
 		//START LDX -check ldx
 		case 0x31: //LDX Immidiate
@@ -1952,7 +1467,557 @@ Flags = Flags & (0xFF - FLAG_Z);
 			set_flag_n(Registers[REGISTER_X]);
 			set_flag_z(Registers[REGISTER_X]);
 			break;
-			//END LDX
+		//END LDX
+
+		//START STX
+		case 0x02://STX abs
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+
+			//data = fetch();
+			//Memory[data] = Registers[REGISTER_A];
+			if (address >= 0 && address < MEMORY_SIZE) {
+				Memory[address] = Registers[REGISTER_X];
+			}
+
+			set_flag_n(Registers[REGISTER_A]);
+			set_flag_z(Registers[REGISTER_A]);
+			break;
+
+		case 0x12://STX abs X
+			address += Index_Registers[REGISTER_X];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				Memory[address] = Registers[REGISTER_X];
+			}
+			set_flag_n(Registers[REGISTER_A]);
+			set_flag_z(Registers[REGISTER_A]);
+			break;
+
+		case 0x22://STX abs Y
+			address += Index_Registers[REGISTER_Y];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				Memory[address] = Registers[REGISTER_X];
+			}
+			set_flag_n(Registers[REGISTER_A]);
+			set_flag_z(Registers[REGISTER_A]);
+			break;
+
+		case 0x32://STX abs X Y
+			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8) + Index_Registers[REGISTER_X];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				Memory[address] = Registers[REGISTER_X];
+			}
+			set_flag_n(Registers[REGISTER_A]);
+			set_flag_z(Registers[REGISTER_A]);
+			break;
+
+		case 0x42://STX (ind) abs X Y
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			HB = Memory[address];
+			LB = Memory[address + 1];
+			address += (WORD)((WORD)HB << 8) + LB;
+			address += Index_Registers[REGISTER_X];
+			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8);
+			if (address >= 0 && address < MEMORY_SIZE) {
+				Memory[address] = Registers[REGISTER_X];
+			}
+			set_flag_n(Registers[REGISTER_A]);
+			set_flag_z(Registers[REGISTER_A]);
+			break;
+		//END STX
+
+		//START DEX
+		case 0xE1://may need to check if wraparound
+			Registers[REGISTER_X]--;
+			set_flag_z(Registers[REGISTER_X]);
+			//END DEX
+
+			//START INX
+		case 0xE2://may need to check if wraparound
+			Registers[REGISTER_X]++;
+			set_flag_z(Registers[REGISTER_X]);
+			//END INX
+
+		//START MAY
+		case 0x0C:
+			Registers[REGISTER_Y] = Registers[REGISTER_A];
+			set_flag_n(REGISTER_A);
+			break;
+			//END MAY
+
+			//START MYA
+		case 0x0D:
+			Registers[REGISTER_A] = Registers[REGISTER_Y];
+			set_flag_n(REGISTER_Y);
+			set_flag_z(REGISTER_A);
+			break;
+			//END MYA
+
+			//START DEY
+		case 0xE3://may need to check if wraparound
+			Registers[REGISTER_Y]--;
+			set_flag_z(Registers[REGISTER_Y]);
+			//END DEY
+
+			//START INCY
+		case 0xE4://may need to check if wraparound
+			Registers[REGISTER_Y]++;
+			set_flag_z(Registers[REGISTER_Y]);
+			//END INCY
+
+			//START LODS
+		case 0x9D://LODS #
+			data = fetch();
+			StackPointer = data << 8;
+			StackPointer += fetch();
+
+			break;
+		case 0xAD://LODS abs
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE - 1) {
+				StackPointer = (WORD)Memory[address] << 8;
+				StackPointer += Memory[address + 1];
+			}
+			break;
+		case 0xBD://lods abs x
+			address += Index_Registers[REGISTER_X];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE - 1) {
+				StackPointer = (WORD)Memory[address] << 8;
+				StackPointer += Memory[address + 1];
+			}
+			break;
+		case 0xCD://lods abs y
+			address += Index_Registers[REGISTER_Y];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE - 1) {
+				StackPointer = (WORD)Memory[address] << 8;
+				StackPointer += Memory[address + 1];
+			}
+			break;
+		case 0xDD://lods abs x y
+			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8) + Index_Registers[REGISTER_X];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE - 1) {
+				StackPointer = (WORD)Memory[address] << 8;
+				StackPointer += Memory[address + 1];
+			}
+			break;
+
+		case 0xED://lods ind abs x y
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			HB = Memory[address];
+			LB = Memory[address + 1];
+			address += (WORD)((WORD)HB << 8) + LB;
+			address += Index_Registers[REGISTER_X];
+			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8);
+			if (address >= 0 && address < MEMORY_SIZE - 1) {
+				StackPointer = (WORD)Memory[address] << 8;
+				StackPointer += Memory[address + 1];
+			}
+			//set_flag_n(Registers[REGISTER_A]);
+			//set_flag_z(Registers[REGISTER_A]);
+			break;
+			//END LODS
+
+			//START MAS
+		case 0x0E:
+			Flags = Registers[REGISTER_A];
+			break;
+			//END MAS
+
+		//START CSA
+		case 0x0F:
+			Registers[REGISTER_A] = Flags;
+			printf("|%X|", Flags);
+			break;
+		//END CSA
+		
+
+
+		//START PUSH
+		case 0x9E:
+			if ((StackPointer >= 1)&& (StackPointer < MEMORY_SIZE)){
+				Memory[StackPointer] = Registers[REGISTER_A];
+				StackPointer--;
+			}
+			break;
+		case 0xAE:
+			break;
+		case 0xBE:
+			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
+				Memory[StackPointer] = Registers[REGISTER_B];
+				StackPointer--;
+			}
+			break;
+		case 0xCE:
+			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
+				Memory[StackPointer] = Registers[REGISTER_C];
+				StackPointer--;
+			}
+			break;
+		case 0xDE:
+			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
+				Memory[StackPointer] = Registers[REGISTER_D];
+				StackPointer--;
+			}
+			break;
+		case 0xEE:
+			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
+				Memory[StackPointer] = Registers[REGISTER_E];
+				StackPointer--;
+			}
+			break;
+		case 0xFE:
+			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
+				Memory[StackPointer] = Registers[REGISTER_F];
+				StackPointer--;
+			}
+			break;
+		//END PUSH
+
+		//START POP
+		case 0x9F:
+			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE -1)) {
+				StackPointer++;
+				Registers[REGISTER_A] = Memory[StackPointer];
+			}
+			break;
+		case 0xAF:
+			break;
+		case 0xBF:
+			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
+				StackPointer++;
+				Registers[REGISTER_B] = Memory[StackPointer];
+			}
+			break;
+		case 0xCF:
+			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
+				StackPointer++;
+				Registers[REGISTER_C] = Memory[StackPointer];
+			}
+			break;
+		case 0xDF:
+			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
+				StackPointer++;
+				Registers[REGISTER_D] = Memory[StackPointer];
+			}
+			break;
+		case 0xEF:
+			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
+				StackPointer++;
+				Registers[REGISTER_E] = Memory[StackPointer];
+			}
+			break;
+		case 0xFF:
+			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
+				StackPointer++;
+				Registers[REGISTER_F] = Memory[StackPointer];
+			}
+			break;
+		//END POP
+
+		//START LX
+		case 0x9B://LX A B #
+				  //HB = fetch();
+				  //lB = fetch();
+			Registers[REGISTER_A] = fetch();
+			Registers[REGISTER_B] = fetch();
+
+			set_flag_n(Registers[REGISTER_A]);//CHECK THIS AS NOT SURE IF ON A OR BOTH
+			set_flag_z(Registers[REGISTER_A]);
+			break;
+			//END LX
+
+			//START JMP
+		case 0xEA://chk
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				//ProgramCounter = Memory[address];
+				ProgramCounter = address;
+			}
+			break;
+			//END JMP
+		//START MV //is #
+		case 0x07:
+			Registers[REGISTER_B] = fetch();// Memory[fetch()];
+			break;
+		case 0x08:
+			Registers[REGISTER_C] = fetch();// = Memory[fetch()];
+			break;
+		case 0x09:
+			Registers[REGISTER_D] = fetch();// = Memory[fetch()];
+			break;
+		case 0x0A:
+			Registers[REGISTER_E] = fetch();// = Memory[fetch()];
+			break;
+		case 0x0B:
+			Registers[REGISTER_F] = fetch();// = Memory[fetch()];
+			break;
+		//END MV
+
+
+
+
+
+		//START BRA
+		case 0xF0:
+			HB = fetch();
+			LB = fetch();
+			offset = (WORD)LB;
+			if ((offset & 0x80) != 0) {
+				offset += 0xFF00;
+			}
+			address = ProgramCounter + offset;//CHECK
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				//ProgramCounter = Memory[address];
+				ProgramCounter = address;
+			}
+			break;
+		//END BRA
+
+		//START BCC
+		case 0xF1:
+			HB = fetch();
+			LB = fetch();
+			offset = (WORD)LB;
+			if ((offset & 0x80) != 0) {
+				offset += 0xFF00;
+			}
+			address = ProgramCounter + offset;//CHECK
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				//ProgramCounter = Memory[address];
+				if ((Flags & FLAG_C) == 0) {
+					ProgramCounter = address;
+				}
+			}
+			break;
+		//END BCC
+
+		//START BCS
+		case 0xF2:
+			HB = fetch();
+			LB = fetch();
+			offset = (WORD)LB;
+			if ((offset & 0x80) != 0) {
+				offset += 0xFF00;
+			}
+			address = ProgramCounter + offset;//CHECK
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				//ProgramCounter = Memory[address];
+				if ((Flags & FLAG_C) != 0) {
+					ProgramCounter = address;
+				}
+			}
+			break;
+		//END BCS
+
+		//START BNE
+		//END BNE
+
+		//START BEQ
+		//END BEQ
+
+		//START BVC
+		//END BVC
+
+		//START BVS
+		//END BVS
+
+		//START BMI
+		//END BMI
+
+		//START BPL
+		//END BPL
+
+		//START BGE
+		//END BGE
+
+		//START BLE
+		//END BLE
+
+		//START BGT
+		//END BGT
+
+		//START BLT
+		//END BLT
+
+		//START BGT
+		//END BGT
+
+		
+
+		
+		
+
+		//START SUB
+
+		//END SUB
+
+		
+
+		
+
+		
+		//START AND
+		//case 0x29:
+		//	WORD regtemp;
+		//	data = fetch();
+		//	for (int i = 0; i < 8; i++) {
+		//
+		//	}
+		//	break;
+			
+
+		//END AND
+
+		
+
+		//START JSR
+		case 0xE9:
+			HB = fetch();
+			LB = fetch();
+			address = ((WORD)HB << 8) + (WORD)LB;
+				if ((StackPointer >= 2) && (StackPointer < MEMORY_SIZE)) {
+					Memory[StackPointer] = (BYTE)(ProgramCounter & 0xFF);
+					StackPointer--;
+					Memory[StackPointer] = (BYTE)((ProgramCounter >> 8) & 0xFF);
+					StackPointer--;
+			}
+				ProgramCounter = address;
+			break;
+		//END JSR
+
+		//START RTN
+		case 0xDB:
+			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 2)) {
+				StackPointer++;
+				HB = Memory[StackPointer];
+				StackPointer++;
+				LB = Memory[StackPointer];
+				ProgramCounter = ((WORD)HB << 8) + (WORD)LB;
+			}
+			break;
+		//END RTN
+
+		//START INCA
+		//case 0xD2://INCA
+		//	Registers[REGISTER_A] ++;
+		//	set_flag_n(Registers[REGISTER_A]);
+		//	set_flag_z(Registers[REGISTER_A]);
+		//	break;
+
+		//case 0xE2://INX
+		//	Registers[REGISTER_X] ++;
+		//	set_flag_z(Registers[REGISTER_X]);
+		//	break;
+		//case 0xE4://INCY
+		//	Registers[REGISTER_Y] ++;
+		//	set_flag_z(Registers[REGISTER_Y]);
+		//	break;
+		//END INCA
+		
+
+		
+
+		
+
+		
+
+		//START NOP
+		case 0x73:
+			break;
+		//END NOP
+
+		
+
+/*
+if (reg == 0) // msbit set
+{
+Flags = Flags | FLAG_Z;
+}
+else
+{
+Flags = Flags & (0xFF - FLAG_Z);
+}
+*/
+		//START CLC
+		case 0x18:
+			Flags = Flags & (0xFF - FLAG_C);
+			break;
+		//END CLC
+
+		//START SEC
+		case 0x19:
+			Flags = Flags | FLAG_C;
+			break;
+		//END SEC
+		
+		//START CLI
+		case 0x1A:
+			Flags = Flags & (0xFF - FLAG_I);
+			break;
+		//END CLI
+
+		//START STI
+		case 0x1B:
+			Flags = Flags | FLAG_I;
+			break;
+		//END STI
+
+		//START STV
+		case 0x1C:
+			Flags = Flags & (0xFF - FLAG_V);
+			break;
+		//END STV
+
+		//START CLV
+		case 0x1D:
+			Flags = Flags | FLAG_V;
+			break;
+		//END CLV
+
+		//START NOP
+		//END NOP
+
+		//START HLT
+		//END HLT
+
+		//START SWI
+		//END SWI
+
+		//START RTI
+		//END RTI
+
+
+		
 			//START HLT
 		case 0x74:
 			halt = true;
