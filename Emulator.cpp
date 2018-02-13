@@ -6,7 +6,7 @@
 #pragma comment(lib, "wsock32.lib")
 
 
-#define STUDENT_NUMBER    "123456789"
+#define STUDENT_NUMBER    "17024721"
 
 #define IP_ADDRESS_SERVER "127.0.0.1"
 
@@ -696,6 +696,187 @@ void Group_1(BYTE opcode)
 		//START ADD
 		//END ADD
 
+		//START ADD //check add --check if carry flag set and add 1 for carry info check getflags
+		case 0x23://MODIFIED FLAG POSITION
+				  //short temp = 0;
+			param1 = Registers[REGISTER_A];
+			param2 = Registers[REGISTER_B];
+			//temp_word = (WORD)Registers[REGISTER_A] + (WORD)Registers[REGISTER_B];
+			temp_word = (WORD)param1 + (WORD)param2;
+			if ((Flags & FLAG_C) != 0) {
+				temp_word++;
+			}
+			if (temp_word >= 0x100)//if overflowed set flag
+			{
+				Flags = Flags | FLAG_C;
+			}
+			else {
+				Flags = Flags & (0xFF - FLAG_C);
+			}
+			Registers[REGISTER_A] = (BYTE)temp_word;
+
+			//data = Registers[REGISTER_A];//take a copy of the acc for later comparison
+
+			//Registers[REGISTER_A] += Registers[REGISTER_B];
+			//if (get_flag_c()) {
+			//	Registers[REGISTER_A]++;
+			//}
+			//set_flag_v(Registers[REGISTER_A]);
+			//set_flag_v(Registers[REGISTER_A], Registers[REGISTER_B], (BYTE)temp_word);
+
+			//set_flag_n(Registers[REGISTER_A]);
+			//set_flag_z(Registers[REGISTER_A]);
+			set_flag_n((BYTE)temp_word);
+			set_flag_z((BYTE)temp_word);
+			set_flag_v(param1,param2, (BYTE)temp_word);
+			//set_flag_c(Registers[REGISTER_A]);
+
+			//Registers[REGISTER_A] = (BYTE)temp_word;
+			break;
+		case 0x33:
+			param1 = Registers[REGISTER_A];
+			param2 = Registers[REGISTER_C];
+			temp_word = (WORD)param1 + (WORD)param2;
+
+			//short temp = 0;
+			//temp_word = (WORD)Registers[REGISTER_A] + (WORD)Registers[REGISTER_C];
+			if ((Flags & FLAG_C) != 0) {
+				temp_word++;
+			}
+			if (temp_word >= 0x100)//if overflowed set flag
+			{
+				Flags = Flags | FLAG_C;
+			}
+			else {
+				Flags = Flags & (0xFF - FLAG_C);
+			}
+			Registers[REGISTER_A] = (BYTE)temp_word;
+
+			//data = Registers[REGISTER_A];//take a copy of the acc for later comparison
+
+			//Registers[REGISTER_A] += Registers[REGISTER_B];
+			//if (get_flag_c()) {
+			//	Registers[REGISTER_A]++;
+			//}
+			//set_flag_v(Registers[REGISTER_A]);
+			//set_flag_v(Registers[REGISTER_A], Registers[REGISTER_C], (BYTE)temp_word);
+			//set_flag_n(Registers[REGISTER_A]);
+			//set_flag_z(Registers[REGISTER_A]);
+			set_flag_n((BYTE)temp_word);
+			set_flag_z((BYTE)temp_word);
+			set_flag_v(param1, param2, (BYTE)temp_word);
+			//set_flag_c(Registers[REGISTER_A]);
+			//Registers[REGISTER_A] = (BYTE)temp_word;
+
+			break;
+
+		case 0x43:
+			param1 = Registers[REGISTER_A];
+			param2 = Registers[REGISTER_D];
+			temp_word = (WORD)param1 + (WORD)param2;
+
+			//short temp = 0;
+			//temp_word = (WORD)Registers[REGISTER_A] + (WORD)Registers[REGISTER_D];
+			if ((Flags & FLAG_C) != 0) {
+				temp_word++;
+			}
+			if (temp_word >= 0x100)//if overflowed set flag
+			{
+				Flags = Flags | FLAG_C;
+			}
+			else {
+				Flags = Flags & (0xFF - FLAG_C);
+			}
+			Registers[REGISTER_A] = (BYTE)temp_word;
+
+			//data = Registers[REGISTER_A];//take a copy of the acc for later comparison
+
+			//Registers[REGISTER_A] += Registers[REGISTER_B];
+			//if (get_flag_c()) {
+			//	Registers[REGISTER_A]++;
+			//}
+			//set_flag_v(Registers[REGISTER_A]);
+			//set_flag_v(Registers[REGISTER_A], Registers[REGISTER_D], (BYTE)temp_word);
+			//set_flag_n(Registers[REGISTER_A]);
+			//set_flag_z(Registers[REGISTER_A]);
+			set_flag_n((BYTE)temp_word);
+			set_flag_z((BYTE)temp_word);
+			set_flag_v(param1, param2, (BYTE)temp_word);
+			//set_flag_c(Registers[REGISTER_A]);
+			//Registers[REGISTER_A] = (BYTE)temp_word;
+			break;
+		case 0x53:
+			param1 = Registers[REGISTER_A];
+			param2 = Registers[REGISTER_E];
+			temp_word = (WORD)param1 + (WORD)param2;
+
+			//short temp = 0;
+			//temp_word = (WORD)Registers[REGISTER_A] + (WORD)Registers[REGISTER_E];
+			if ((Flags & FLAG_C) != 0) {
+				temp_word++;
+			}
+			if (temp_word >= 0x100)//if overflowed set flag
+			{
+				Flags = Flags | FLAG_C;
+			}
+			else {
+				Flags = Flags & (0xFF - FLAG_C);
+			}
+			Registers[REGISTER_A] = (BYTE)temp_word;
+
+			//data = Registers[REGISTER_A];//take a copy of the acc for later comparison
+
+			//Registers[REGISTER_A] += Registers[REGISTER_B];
+			//if (get_flag_c()) {
+			//	Registers[REGISTER_A]++;
+			//}
+			//set_flag_v(Registers[REGISTER_A]);
+			//set_flag_v(Registers[REGISTER_A], Registers[REGISTER_E], (BYTE)temp_word);
+			//set_flag_n(Registers[REGISTER_A]);
+			//set_flag_z(Registers[REGISTER_A]);
+			set_flag_n((BYTE)temp_word);
+			set_flag_z((BYTE)temp_word);
+			set_flag_v(param1, param2, (BYTE)temp_word);
+			//set_flag_c(Registers[REGISTER_A]);
+			//Registers[REGISTER_A] = (BYTE)temp_word;
+			break;
+		case 0x63:
+			param1 = Registers[REGISTER_A];
+			param2 = Registers[REGISTER_F];
+			temp_word = (WORD)param1 + (WORD)param2;
+
+			//short temp = 0;
+			//temp_word = (WORD)Registers[REGISTER_A] + (WORD)Registers[REGISTER_F];
+			if ((Flags & FLAG_C) != 0) {
+				temp_word++;
+			}
+			if (temp_word >= 0x100)//if overflowed set flag
+			{
+				Flags = Flags | FLAG_C;
+			}
+			else {
+				Flags = Flags & (0xFF - FLAG_C);
+			}
+			Registers[REGISTER_A] = (BYTE)temp_word;
+
+			//data = Registers[REGISTER_A];//take a copy of the acc for later comparison
+
+			//Registers[REGISTER_A] += Registers[REGISTER_B];
+			//if (get_flag_c()) {
+			//	Registers[REGISTER_A]++;
+			//}
+			//set_flag_v(Registers[REGISTER_A]);
+			//set_flag_v(Registers[REGISTER_A], Registers[REGISTER_F], (BYTE)temp_word);
+			//set_flag_n(Registers[REGISTER_A]);
+			//set_flag_z(Registers[REGISTER_A]);
+			set_flag_n((BYTE)temp_word);
+			set_flag_z((BYTE)temp_word);
+			set_flag_v(param1, param2, (BYTE)temp_word);
+			//set_flag_c(Registers[REGISTER_A]);
+			//Registers[REGISTER_A] = (BYTE)temp_word;
+			break;
+
+			//END ADD
 		//START SUB
 		//END SUB
 
@@ -1333,153 +1514,7 @@ void Group_1(BYTE opcode)
 			break;
 		//END COM
 
-		//START ADD //check add --check if carry flag set and add 1 for carry info check getflags
-		case 0x23://MODIFIED FLAG POSITION
-			//short temp = 0;
-			temp_word = (WORD)Registers[REGISTER_A]+ 
-						(WORD)Registers[REGISTER_B];
-			if ((Flags & FLAG_C) != 0) {
-				temp_word++;
-			}
-			if (temp_word >= 0x100)//if overflowed set flag
-			{
-				Flags = Flags | FLAG_C;
-			}
-			else {
-				Flags = Flags & (0xFF- FLAG_C);
-			}
-			Registers[REGISTER_A] = (BYTE)temp_word;
-
-			//data = Registers[REGISTER_A];//take a copy of the acc for later comparison
-
-			//Registers[REGISTER_A] += Registers[REGISTER_B];
-			//if (get_flag_c()) {
-			//	Registers[REGISTER_A]++;
-			//}
-			//set_flag_v(Registers[REGISTER_A]);
-			set_flag_v(Registers[REGISTER_A], Registers[REGISTER_B],(BYTE)temp_word);
-
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
-			//set_flag_c(Registers[REGISTER_A]);
-
-			//Registers[REGISTER_A] = (BYTE)temp_word;
-			break;
-		case 0x33:
-			//short temp = 0;
-			temp_word = (WORD)Registers[REGISTER_A] + (WORD)Registers[REGISTER_C];
-			if ((Flags & FLAG_C) != 0) {
-				temp_word++;
-			}
-			if (temp_word >= 0x100)//if overflowed set flag
-			{
-				Flags = Flags | FLAG_C;
-			}
-			else {
-				Flags = Flags & (0xFF - FLAG_C);
-			}
-			Registers[REGISTER_A] = (BYTE)temp_word;
-
-			//data = Registers[REGISTER_A];//take a copy of the acc for later comparison
-
-			//Registers[REGISTER_A] += Registers[REGISTER_B];
-			//if (get_flag_c()) {
-			//	Registers[REGISTER_A]++;
-			//}
-			//set_flag_v(Registers[REGISTER_A]);
-			set_flag_v(Registers[REGISTER_A], Registers[REGISTER_C], (BYTE)temp_word);
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
-			//set_flag_c(Registers[REGISTER_A]);
-			//Registers[REGISTER_A] = (BYTE)temp_word;
-			break;
-			
-		case 0x43:
-			//short temp = 0;
-			temp_word = (WORD)Registers[REGISTER_A] + (WORD)Registers[REGISTER_D];
-			if ((Flags & FLAG_C) != 0) {
-				temp_word++;
-			}
-			if (temp_word >= 0x100)//if overflowed set flag
-			{
-				Flags = Flags | FLAG_C;
-			}
-			else {
-				Flags = Flags & (0xFF - FLAG_C);
-			}
-			Registers[REGISTER_A] = (BYTE)temp_word;
-
-			//data = Registers[REGISTER_A];//take a copy of the acc for later comparison
-
-			//Registers[REGISTER_A] += Registers[REGISTER_B];
-			//if (get_flag_c()) {
-			//	Registers[REGISTER_A]++;
-			//}
-			//set_flag_v(Registers[REGISTER_A]);
-			set_flag_v(Registers[REGISTER_A], Registers[REGISTER_D], (BYTE)temp_word);
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
-			//set_flag_c(Registers[REGISTER_A]);
-			//Registers[REGISTER_A] = (BYTE)temp_word;
-			break;
-		case 0x53:
-			//short temp = 0;
-			temp_word = (WORD)Registers[REGISTER_A] + (WORD)Registers[REGISTER_E];
-			if ((Flags & FLAG_C) != 0) {
-				temp_word++;
-			}
-			if (temp_word >= 0x100)//if overflowed set flag
-			{
-				Flags = Flags | FLAG_C;
-			}
-			else {
-				Flags = Flags & (0xFF - FLAG_C);
-			}
-			Registers[REGISTER_A] = (BYTE)temp_word;
-
-			//data = Registers[REGISTER_A];//take a copy of the acc for later comparison
-
-			//Registers[REGISTER_A] += Registers[REGISTER_B];
-			//if (get_flag_c()) {
-			//	Registers[REGISTER_A]++;
-			//}
-			//set_flag_v(Registers[REGISTER_A]);
-			set_flag_v(Registers[REGISTER_A], Registers[REGISTER_E], (BYTE)temp_word);
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
-			//set_flag_c(Registers[REGISTER_A]);
-			//Registers[REGISTER_A] = (BYTE)temp_word;
-			break;
-		case 0x63:
-			//short temp = 0;
-			temp_word = (WORD)Registers[REGISTER_A] + (WORD)Registers[REGISTER_F];
-			if ((Flags & FLAG_C) != 0) {
-				temp_word++;
-			}
-			if (temp_word >= 0x100)//if overflowed set flag
-			{
-				Flags = Flags | FLAG_C;
-			}
-			else {
-				Flags = Flags & (0xFF - FLAG_C);
-			}
-			Registers[REGISTER_A] = (BYTE)temp_word;
-
-			//data = Registers[REGISTER_A];//take a copy of the acc for later comparison
-
-			//Registers[REGISTER_A] += Registers[REGISTER_B];
-			//if (get_flag_c()) {
-			//	Registers[REGISTER_A]++;
-			//}
-			//set_flag_v(Registers[REGISTER_A]);
-			set_flag_v(Registers[REGISTER_A], Registers[REGISTER_F], (BYTE)temp_word);
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
-			//set_flag_c(Registers[REGISTER_A]);
-			//Registers[REGISTER_A] = (BYTE)temp_word;
-			break;
-
-		//END ADD
+		
 		
 
 		//START SUB
