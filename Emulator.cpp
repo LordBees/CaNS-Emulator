@@ -568,6 +568,7 @@ void Group_1(BYTE opcode)
 	WORD param1;
 	WORD param2;
 	WORD offset;
+	BYTE Saved_Flags;
 
 	//printf("lb/hb %b\%b", );
 	printf("|G1|op=%X|", opcode);
@@ -1253,6 +1254,22 @@ void Group_1(BYTE opcode)
 		//END RLC
 
 		//START RLCA
+		case 0xD5:
+			Saved_Flags = Flags;
+			if ((Registers[REGISTER_A] & 0x80) == 0x80) {
+				Flags = Flags | FLAG_C;
+			}
+			else
+			{
+				Flags = Flags & (0xFF - FLAG_C);
+			}
+			Registers[REGISTER_A] = (Registers[REGISTER_A] << 1) & 0xFE;
+			if ((Saved_Flags&FLAG_C) == FLAG_C) {
+				Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
+			}
+			set_flag_n(Registers[REGISTER_A]);
+			set_flag_z(Registers[REGISTER_A]);
+			break;
 		//END RLCA
 
 		//START ASL
