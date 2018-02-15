@@ -1194,6 +1194,8 @@ void Group_1(BYTE opcode)
 			if (address >= 0 && address < MEMORY_SIZE) {
 				Memory[address]--;
 			}
+			set_flag_n(Memory[address]);
+			set_flag_z(Memory[address]);
 			break;
 
 		case 0xA3://inc abs x
@@ -1204,6 +1206,8 @@ void Group_1(BYTE opcode)
 			if (address >= 0 && address < MEMORY_SIZE) {
 				Memory[address]--;
 			}
+			set_flag_n(Memory[address]);
+			set_flag_z(Memory[address]);
 			break;
 
 		case 0xB3://inc abs y
@@ -1214,6 +1218,8 @@ void Group_1(BYTE opcode)
 			if (address >= 0 && address < MEMORY_SIZE) {
 				Memory[address]--;
 			}
+			set_flag_n(Memory[address]);
+			set_flag_z(Memory[address]);
 			break;
 
 		case 0xC3://inc abs x y
@@ -1224,8 +1230,8 @@ void Group_1(BYTE opcode)
 			if (address >= 0 && address < MEMORY_SIZE) {
 				Memory[address]--;
 			}
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
+			set_flag_n(Memory[address]);
+			set_flag_z(Memory[address]);
 			break;
 		//END DEC
 
@@ -1270,8 +1276,8 @@ void Group_1(BYTE opcode)
 
 			//if (address >= 0 && address < MEMORY_SIZE) {
 
-			temp_word = Memory[address] ^ 0xFF;
-			Memory[address] = (BYTE)temp_word;
+			temp_word = ~Memory[address];// data;//bit flip temp_word = Memory[address] ^ 0xFF;
+			//Memory[address] = (BYTE)temp_word;
 
 			if (temp_word >= 0x100)//if overflowed set flag
 			{
@@ -1282,6 +1288,7 @@ void Group_1(BYTE opcode)
 			}
 			set_flag_n(Memory[address]);
 			set_flag_z(Memory[address]);
+			Memory[address] = (BYTE)temp_word;
 			break;
 
 		case 0xA8://COM ABS X
@@ -1293,7 +1300,7 @@ void Group_1(BYTE opcode)
 
 			//if (address >= 0 && address < MEMORY_SIZE) {
 
-			temp_word = Memory[address] ^ 0xFF;
+			temp_word = ~Memory[address]; //temp_word = ~Registers[REGISTER_A];// data;//bit flip temp_word = Memory[address] ^ 0xFF;
 			if (temp_word >= 0x100)//if overflowed set flag
 			{
 				Flags = Flags | FLAG_C;
@@ -1315,7 +1322,7 @@ void Group_1(BYTE opcode)
 
 			//if (address >= 0 && address < MEMORY_SIZE) {
 
-			temp_word = Memory[address] ^ 0xFF;
+			temp_word = ~Memory[address]; //temp_word = ~Registers[REGISTER_A];// data;//bit flip temp_word = Memory[address] ^ 0xFF;
 			if (temp_word >= 0x100)//if overflowed set flag
 			{
 				Flags = Flags | FLAG_C;
@@ -1337,7 +1344,7 @@ void Group_1(BYTE opcode)
 
 			//if (address >= 0 && address < MEMORY_SIZE) {
 
-			temp_word = Memory[address] ^ 0xFF;
+			temp_word = ~Memory[address]; //temp_word = ~Registers[REGISTER_A];// data;//bit flip temp_word = Memory[address] ^ 0xFF;
 			if (temp_word >= 0x100)//if overflowed set flag
 			{
 				Flags = Flags | FLAG_C;
@@ -1365,6 +1372,7 @@ void Group_1(BYTE opcode)
 			else {
 				Flags = Flags & (0xFF - FLAG_C);
 			}
+			Registers[REGISTER_A] = (BYTE)temp_word;
 			set_flag_n(temp_word);
 			set_flag_z(temp_word);
 			return;
@@ -1762,6 +1770,7 @@ void Group_1(BYTE opcode)
 			}
 			break;
 			//END JMP
+
 		//START MV //is #
 		case 0x07:
 			Registers[REGISTER_B] = fetch();// Memory[fetch()];
@@ -1783,6 +1792,11 @@ void Group_1(BYTE opcode)
 
 
 
+			/*
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			*/
 
 		//START BRA
 		case 0xF0:
@@ -1793,11 +1807,11 @@ void Group_1(BYTE opcode)
 				offset += 0xFF00;
 			}
 			address = ProgramCounter + offset;//CHECK
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
+			//address += (WORD)((WORD)HB << 8) + LB;
+			//if (address >= 0 && address < MEMORY_SIZE) {
 				//ProgramCounter = Memory[address];
 				ProgramCounter = address;
-			}
+			//}
 			break;
 		//END BRA
 
