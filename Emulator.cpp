@@ -1251,6 +1251,98 @@ void Group_1(BYTE opcode)
 		//END RCRA
 
 		//START RLC
+		case 0x95://RLC abs
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				Saved_Flags = Flags;
+				if ((Memory[address] & 0x80) == 0x80) {
+					Flags = Flags | FLAG_C;
+				}
+				else
+				{
+					Flags = Flags & (0xFF - FLAG_C);
+				}
+				Memory[address] = (Memory[address] << 1) & 0xFE;
+				if ((Saved_Flags&FLAG_C) == FLAG_C) {
+					Memory[address] = Memory[address] | 0x01;
+				}
+			}
+			set_flag_n(Memory[address]);
+			set_flag_z(Memory[address]);
+			break;
+
+		case 0xA5://RLC abs x
+			address += Index_Registers[REGISTER_X];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				Saved_Flags = Flags;
+				if ((Memory[address] & 0x80) == 0x80) {
+					Flags = Flags | FLAG_C;
+				}
+				else
+				{
+					Flags = Flags & (0xFF - FLAG_C);
+				}
+				Memory[address] = (Memory[address] << 1) & 0xFE;
+				if ((Saved_Flags&FLAG_C) == FLAG_C) {
+					Memory[address] = Memory[address] | 0x01;
+				}
+			}
+			set_flag_n(Memory[address]);
+			set_flag_z(Memory[address]);
+			break;
+
+		case 0xB5://RLC abs y
+			address += Index_Registers[REGISTER_Y];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				Saved_Flags = Flags;
+				if ((Memory[address] & 0x80) == 0x80) {
+					Flags = Flags | FLAG_C;
+				}
+				else
+				{
+					Flags = Flags & (0xFF - FLAG_C);
+				}
+				Memory[address] = (Memory[address] << 1) & 0xFE;
+				if ((Saved_Flags&FLAG_C) == FLAG_C) {
+					Memory[address] = Memory[address] | 0x01;
+				}
+			}
+			set_flag_n(Memory[address]);
+			set_flag_z(Memory[address]);
+			break;
+
+		case 0xC5://RLC abs x y 
+			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8) + Index_Registers[REGISTER_X];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				Saved_Flags = Flags;
+				if ((Memory[address] & 0x80) == 0x80) {
+					Flags = Flags | FLAG_C;
+				}
+				else
+				{
+					Flags = Flags & (0xFF - FLAG_C);
+				}
+				Memory[address] = (Memory[address] << 1) & 0xFE;
+				if ((Saved_Flags&FLAG_C) == FLAG_C) {
+					Memory[address] = Memory[address] | 0x01;
+				}
+			}
+			set_flag_n(Memory[address]);
+			set_flag_z(Memory[address]);
+			break;
+
+
 		//END RLC
 
 		//START RLCA
