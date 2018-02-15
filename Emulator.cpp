@@ -1248,6 +1248,22 @@ void Group_1(BYTE opcode)
 		//END RCR
 
 		//START RCRA
+		case 0xD4:
+			Saved_Flags = Flags;
+			if ((Registers[REGISTER_A] & 0x01) == 0x01) {
+				Flags = Flags | FLAG_C;
+			}
+			else
+			{
+				Flags = Flags & (0xFF - FLAG_C);
+			}
+			Registers[REGISTER_A] = (Registers[REGISTER_A] >> 1) & 0x7F;
+			if ((Saved_Flags&FLAG_C) == FLAG_C) {
+				Registers[REGISTER_A] = Registers[REGISTER_A] | 0x80;
+			}
+			set_flag_n(Registers[REGISTER_A]);
+			set_flag_z(Registers[REGISTER_A]);
+			break;
 		//END RCRA
 
 		//START RLC
