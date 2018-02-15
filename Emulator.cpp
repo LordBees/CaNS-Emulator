@@ -1475,12 +1475,46 @@ void Group_1(BYTE opcode)
 		//END ASL
 
 		//START ASLA
+		case 0xD6:
+			//Saved_Flags = Flags;
+			
+			temp_word = (Registers[REGISTER_A] << 1);
+			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
+			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
+			//}
+			if (temp_word >= 0x100)//if overflowed set flag
+			{
+				Flags = Flags | FLAG_C;
+			}
+			else {
+				Flags = Flags & (0xFF - FLAG_C);
+			}
+			Registers[REGISTER_A] = (BYTE)temp_word;
+			set_flag_n(Registers[REGISTER_A]);
+			set_flag_z(Registers[REGISTER_A]);
+			break;
 		//END ASLA
 
 		//START SAR
 		//END SAR
 
 		//START SARA
+		case 0xD7://SARA  //BROKEN
+			//Saved_Flags = Flags;
+			
+			temp_word = (Registers[REGISTER_A] >> 1);
+			//if (temp_word >= 0x100)//if overflowed set flag
+			//{
+			//	Flags = Flags | FLAG_C;
+			//}
+			//else {
+				Flags = Flags & (0xFF - FLAG_C);
+			//}
+			
+			set_flag_n((BYTE)temp_word);
+			set_flag_z((BYTE)temp_word);
+			Registers[REGISTER_A] = (BYTE)temp_word;
+			break;
 		//END SARA
 
 		//START COM
