@@ -1703,6 +1703,7 @@ void Group_1(BYTE opcode)
 
 		//START ASL
 		case 0x96://ASL abs
+			//break;
 			HB = fetch();
 			LB = fetch();
 			address += (WORD)((WORD)HB << 8) + LB;
@@ -1752,7 +1753,7 @@ void Group_1(BYTE opcode)
 			break;
 
 		case 0xB6://ASL abs y
-			address += Index_Registers[REGISTER_X];
+			address += Index_Registers[REGISTER_Y];
 			HB = fetch();
 			LB = fetch();
 			address += (WORD)((WORD)HB << 8) + LB;
@@ -1836,11 +1837,27 @@ void Group_1(BYTE opcode)
 
 		//START SARA
 		case 0xD7://SARA  //BROKEN
-			Registers[REGISTER_A] = (Registers[REGISTER_A] >> 1);
-			if ((Flags & FLAG_C) != 0) {
-				Registers[REGISTER_A] = Registers[REGISTER_A] | 0x80;
+			//temp_word = ((WORD)Registers[REGISTER_A] << 8);
+			//temp_word = (temp_word >> 1);
+			//if (temp_word <= 0x01)//if overflowed set flag
+			//{
+			//	Flags = Flags | FLAG_C;
+			//}
+			//else {
+			//	Flags = Flags & (0xFF - FLAG_C);
+			//}
+
+			if ((Registers[REGISTER_A] & 0x01) != 0) {
+				Flags = Flags | FLAG_C;
+			}
+			else {
 				Flags = Flags & (0xFF - FLAG_C);//unset carry
 			}
+			Registers[REGISTER_A] = (Registers[REGISTER_A] >> 1);
+			//if ((Flags & FLAG_C) != 0) {
+			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x80;
+			//	Flags = Flags & (0xFF - FLAG_C);//unset carry
+			//}
 
 			//if ((Flags & FLAG_C) != 0) {//check for carry flag, if so add 1
 			//	temp_word = (WORD)((WORD)0x01 << 8) + (WORD)Registers[REGISTER_A];
@@ -1980,9 +1997,127 @@ void Group_1(BYTE opcode)
 		//END COMA
 
 		//START RAL
+		case 0x99://ral abs
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			//Saved_Flags = Flags;
+
+			temp_word = (Memory[address] << 1);
+			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
+			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
+			//}
+			if (temp_word >= 0x100)//if overflowed set flag
+			{
+				//Flags = Flags | FLAG_C;
+				temp_word = temp_word | 0x01;
+			}
+			//else {
+			//	Flags = Flags & (0xFF - FLAG_C);
+			//}
+
+			Memory[address] = (BYTE)temp_word;
+			set_flag_n(Memory[address]);
+			set_flag_z(Memory[address]);
+			break;
+
+		case 0xA9://ral abs x
+			address += Index_Registers[REGISTER_X];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			//Saved_Flags = Flags;
+
+			temp_word = (Memory[address] << 1);
+			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
+			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
+			//}
+			if (temp_word >= 0x100)//if overflowed set flag
+			{
+				//Flags = Flags | FLAG_C;
+				temp_word = temp_word | 0x01;
+			}
+			//else {
+			//	Flags = Flags & (0xFF - FLAG_C);
+			//}
+
+			Memory[address] = (BYTE)temp_word;
+			set_flag_n(Memory[address]);
+			set_flag_z(Memory[address]);
+			break;
+
+		case 0xB9://ral abs y
+			address += Index_Registers[REGISTER_Y];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			//Saved_Flags = Flags;
+
+			temp_word = (Memory[address] << 1);
+			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
+			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
+			//}
+			if (temp_word >= 0x100)//if overflowed set flag
+			{
+				//Flags = Flags | FLAG_C;
+				temp_word = temp_word | 0x01;
+			}
+			//else {
+			//	Flags = Flags & (0xFF - FLAG_C);
+			//}
+
+			Memory[address] = (BYTE)temp_word;
+			set_flag_n(Memory[address]);
+			set_flag_z(Memory[address]);
+			break;
+
+		case 0xC9://ral abs x y
+			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8) + Index_Registers[REGISTER_X];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			//Saved_Flags = Flags;
+
+			temp_word = (Memory[address] << 1);
+			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
+			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
+			//}
+			if (temp_word >= 0x100)//if overflowed set flag
+			{
+				//Flags = Flags | FLAG_C;
+				temp_word = temp_word | 0x01;
+			}
+			//else {
+			//	Flags = Flags & (0xFF - FLAG_C);
+			//}
+
+			Memory[address] = (BYTE)temp_word;
+			set_flag_n(Memory[address]);
+			set_flag_z(Memory[address]);
+			break;
 		//END RAL
 
 		//START RALA
+		case 0xD9:
+			//Saved_Flags = Flags;
+
+			temp_word = (Registers[REGISTER_A] << 1);
+			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
+			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
+			//}
+			if (temp_word >= 0x100)//if overflowed set flag
+			{
+				//Flags = Flags | FLAG_C;
+				temp_word = temp_word | 0x01;
+			}
+			//else {
+			//	Flags = Flags & (0xFF - FLAG_C);
+			//}
+
+			Registers[REGISTER_A] = (BYTE)temp_word;
+			set_flag_n(Registers[REGISTER_A]);
+			set_flag_z(Registers[REGISTER_A]);
+			break;
 		//END RALA
 
 		//START ROR
