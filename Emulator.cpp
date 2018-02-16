@@ -1256,11 +1256,11 @@ void Group_1(BYTE opcode)
 
 		//START SBI
 		case 0x83:
-			//param1 = Registers[REGISTER_A];
-			//param2 = fetch();// Registers[REGISTER_B];
-			//temp_word = (WORD)param1 - (WORD)param2;
-			data = fetch();
-			temp_word = (WORD)Registers[REGISTER_A] - data;
+			param1 = Registers[REGISTER_A];
+			param2 = fetch();// Registers[REGISTER_B];
+			temp_word = (WORD)param1 - (WORD)param2;
+			//data = fetch();
+			//temp_word = (WORD)Registers[REGISTER_A] - (WORD)data;
 
 			//short temp = 0;
 			//temp_word = (WORD)Registers[REGISTER_A] + (WORD)Registers[REGISTER_F];
@@ -1279,17 +1279,32 @@ void Group_1(BYTE opcode)
 
 			set_flag_n((BYTE)temp_word);
 			set_flag_z((BYTE)temp_word);
-			set_flag_v(Registers[REGISTER_A], -data, (BYTE)temp_word);
+			//set_flag_v(Registers[REGISTER_A], -data, (BYTE)temp_word);
+			set_flag_v(param1, -param2, (BYTE)temp_word);
 			//set_flag_c(Registers[REGISTER_A]);
 			//Registers[REGISTER_A] = (BYTE)temp_word;
-		//END ADI
+			break;
+		//END SBI
 
 		//START CPI
 		case 0x84://CPI #
 			param1 = Registers[REGISTER_A];
+			param2 = fetch();
+			temp_word = (WORD)param1 - (WORD)param2;
+			if (temp_word >= 0x100) {
+				Flags = Flags | FLAG_C;
+			}
+			else {
+				Flags = Flags & (0xFF - FLAG_C);
+			}
+			set_flag_n((BYTE)temp_word);
+			set_flag_z((BYTE)temp_word);
+			set_flag_v(param1, -param2, (BYTE)temp_word);
+			/*
+			param1 = Registers[REGISTER_A];
 			param2 = fetch();// Registers[REGISTER_F];
 			temp_word = (WORD)param1 - (WORD)param2;
-			if (temp_word == 0x100) {
+			if (temp_word >= 0x100) {
 				Flags = Flags | FLAG_C;
 			}
 			else {
@@ -1298,6 +1313,7 @@ void Group_1(BYTE opcode)
 			set_flag_n((WORD)temp_word);
 			set_flag_z((WORD)temp_word);
 			set_flag_v(param1, param2, (BYTE)temp_word);
+			*/
 			break;
 		//END CPI
 
