@@ -2108,7 +2108,7 @@ void Group_1(BYTE opcode)
 			if (temp_word >= 0x100)//if overflowed set flag
 			{
 				//Flags = Flags | FLAG_C;
-				temp_word = temp_word | 0x01;
+				temp_word = temp_word | 0x01;//set LSB as MSB was 1
 			}
 			//else {
 			//	Flags = Flags & (0xFF - FLAG_C);
@@ -2121,9 +2121,124 @@ void Group_1(BYTE opcode)
 		//END RALA
 
 		//START ROR
+		case 0x9A://ror abs
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			//Saved_Flags = Flags;
+
+			temp_word = (Memory[address] >> 1);
+			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
+			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
+			//}
+			if ((Memory[address] & 0x01) != 0)//if underflowed set flag
+			{
+				//Flags = Flags | FLAG_C;
+				temp_word = temp_word | 0x80;//set MSB as LSB was 1
+			}
+			//else {
+			//	Flags = Flags & (0xFF - FLAG_C);
+			//}
+
+			Memory[address] = (BYTE)temp_word;
+			set_flag_n(Memory[address]);
+			set_flag_z(Memory[address]);
+			break;
+		case 0xAA://ror abs x
+			address += Index_Registers[REGISTER_X];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			//Saved_Flags = Flags;
+
+			temp_word = (Memory[address] >> 1);
+			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
+			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
+			//}
+			if ((Memory[address] & 0x01) != 0)//if underflowed set flag
+			{
+				//Flags = Flags | FLAG_C;
+				temp_word = temp_word | 0x80;//set MSB as LSB was 1
+			}
+			//else {
+			//	Flags = Flags & (0xFF - FLAG_C);
+			//}
+
+			Memory[address] = (BYTE)temp_word;
+			set_flag_n(Memory[address]);
+			set_flag_z(Memory[address]);
+			break;
+		case 0xBA://ror abs y
+			address += Index_Registers[REGISTER_Y];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			//Saved_Flags = Flags;
+
+			temp_word = (Memory[address] >> 1);
+			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
+			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
+			//}
+			if ((Memory[address] & 0x01) != 0)//if underflowed set flag
+			{
+				//Flags = Flags | FLAG_C;
+				temp_word = temp_word | 0x80;//set MSB as LSB was 1
+			}
+			//else {
+			//	Flags = Flags & (0xFF - FLAG_C);
+			//}
+
+			Memory[address] = (BYTE)temp_word;
+			set_flag_n(Memory[address]);
+			set_flag_z(Memory[address]);
+			break;
+		case 0xCA://ror abs x y
+			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8) + Index_Registers[REGISTER_X];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+			//Saved_Flags = Flags;
+
+			temp_word = (Memory[address] >> 1);
+			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
+			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
+			//}
+			if ((Memory[address] & 0x01) != 0)//if underflowed set flag
+			{
+				//Flags = Flags | FLAG_C;
+				temp_word = temp_word | 0x80;//set MSB as LSB was 1
+			}
+			//else {
+			//	Flags = Flags & (0xFF - FLAG_C);
+			//}
+
+			Memory[address] = (BYTE)temp_word;
+			set_flag_n(Memory[address]);
+			set_flag_z(Memory[address]);
+			break;
 		//END ROR
 
 		//START RORA
+		case 0xDA:
+			//Saved_Flags = Flags;
+
+			temp_word = (Registers[REGISTER_A] >> 1);
+			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
+			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
+			//}
+			if ((Registers[REGISTER_A] & 0x01) != 0)//if underflowed set flag
+			{
+				//Flags = Flags | FLAG_C;
+				temp_word = temp_word | 0x80;//set MSB as LSB was 1
+			}
+			//else {
+			//	Flags = Flags & (0xFF - FLAG_C);
+			//}
+
+			Registers[REGISTER_A] = (BYTE)temp_word;
+			set_flag_n(Registers[REGISTER_A]);
+			set_flag_z(Registers[REGISTER_A]);
+			break;
 		//END RORA
 
 		//START LD
