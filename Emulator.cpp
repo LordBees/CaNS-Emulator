@@ -2886,9 +2886,9 @@ void Group_1(BYTE opcode)
 				StackPointer--;
 				Memory[StackPointer] = (BYTE)((ProgramCounter >> 8) & 0xFF);
 				StackPointer--;
-				//ProgramCounter = address;
+				ProgramCounter = address;
 			}
-			ProgramCounter = address;
+			//ProgramCounter = address;
 			break;
 			//END JSR
 
