@@ -1344,7 +1344,84 @@ void Group_1(BYTE opcode)
 		//END XRI
 
 		//START TST
-			//case 0x
+		case 0x91://tst abs
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+
+			param1 = (WORD)Memory[address];
+			//param2 = Registers[REGISTER_F];
+			temp_word = (WORD)param1 - 0x00;
+
+			//short temp = 0;
+			//temp_word = (WORD)Registers[REGISTER_A] + (WORD)Registers[REGISTER_F];
+			//if ((Flags & FLAG_C) != 0) {
+			//	temp_word--;
+			//}
+			//if (temp_word >= 0x100)//if overflowed set flag
+			//{
+			//	Flags = Flags | FLAG_C;
+			//}
+			//else {
+			//	Flags = Flags & (0xFF - FLAG_C);
+			//}
+			Memory[address] = (BYTE)temp_word;
+
+
+			set_flag_n((BYTE)temp_word);
+			set_flag_z((BYTE)temp_word);
+			//set_flag_v(param1, -param2, (BYTE)temp_word);
+			//set_flag_c(Registers[REGISTER_A]);
+			//Registers[REGISTER_A] = (BYTE)temp_word;
+			break;
+
+		case 0xA1://tst abs x
+			address += Index_Registers[REGISTER_X];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+
+			param1 = (WORD)Memory[address];
+			//param2 = Registers[REGISTER_F];
+			temp_word = (WORD)param1 - 0x00;
+
+			Memory[address] = (BYTE)temp_word;
+
+			set_flag_n((BYTE)temp_word);
+			set_flag_z((BYTE)temp_word);
+			break;
+
+		case 0xB1://tst abs y
+			address += Index_Registers[REGISTER_Y];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+
+			param1 = (WORD)Memory[address];
+			//param2 = Registers[REGISTER_F];
+			temp_word = (WORD)param1 - 0x00;
+
+			Memory[address] = (BYTE)temp_word;
+
+			set_flag_n((BYTE)temp_word);
+			set_flag_z((BYTE)temp_word);
+			break;
+
+		case 0xC1://tst abs x y
+			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8) + Index_Registers[REGISTER_X];
+			HB = fetch();
+			LB = fetch();
+			address += (WORD)((WORD)HB << 8) + LB;
+
+			param1 = (WORD)Memory[address];
+			//param2 = Registers[REGISTER_F];
+			temp_word = (WORD)param1 - 0x00;
+
+			Memory[address] = (BYTE)temp_word;
+
+			set_flag_n((BYTE)temp_word);
+			set_flag_z((BYTE)temp_word);
+			break;
 		//END TST
 			
 		//START TSTA
@@ -2737,6 +2814,33 @@ void Group_1(BYTE opcode)
 			break;
 		//END MV
 
+		//START JSR
+		case 0xE9:
+			HB = fetch();
+			LB = fetch();
+			address = ((WORD)HB << 8) + (WORD)LB;
+			if ((StackPointer >= 2) && (StackPointer < MEMORY_SIZE)) {
+				Memory[StackPointer] = (BYTE)(ProgramCounter & 0xFF);
+				StackPointer--;
+				Memory[StackPointer] = (BYTE)((ProgramCounter >> 8) & 0xFF);
+				StackPointer--;
+				//ProgramCounter = address;
+			}
+			ProgramCounter = address;
+			break;
+			//END JSR
+
+			//START RTN
+		case 0xDB:
+			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 2)) {
+				StackPointer++;
+				HB = Memory[StackPointer];
+				StackPointer++;
+				LB = Memory[StackPointer];
+				ProgramCounter = ((WORD)HB << 8) + (WORD)LB;
+			}
+			break;
+			//END RTN
 
 
 
@@ -2802,13 +2906,46 @@ void Group_1(BYTE opcode)
 		//END BCS
 
 		//START BNE
+		case 0xF3:
+			//HB = fetch();
+			LB = fetch();
+			offset = (WORD)LB;
+			if ((offset & 0x80) != 0) {
+				offset += 0xFF00;
+			}
+			address = ProgramCounter + offset;//CHECK
+											  //address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				//ProgramCounter = Memory[address];
+				if ((Flags & FLAG_Z) == 0) {
+					ProgramCounter = address;
+				}
+			}
+			break;
 		//END BNE
 
 		//START BEQ
+		case 0xF4:
+			//HB = fetch();
+			LB = fetch();
+			offset = (WORD)LB;
+			if ((offset & 0x80) != 0) {
+				offset += 0xFF00;
+			}
+			address = ProgramCounter + offset;//CHECK
+											  //address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				//ProgramCounter = Memory[address];
+				if ((Flags & FLAG_Z) != 0) {
+					ProgramCounter = address;
+				}
+			}
+			break;
 		//END BEQ
 
 		//START BVC
-		//HB = fetch();
+		case 0xF5:
+			//HB = fetch();
 			LB = fetch();
 			offset = (WORD)LB;
 			if ((offset & 0x80) != 0) {
@@ -2837,7 +2974,7 @@ void Group_1(BYTE opcode)
 											  //address += (WORD)((WORD)HB << 8) + LB;
 			if (address >= 0 && address < MEMORY_SIZE) {
 				//ProgramCounter = Memory[address];
-				if ((Flags & FLAG_C) != 0) {
+				if ((Flags & FLAG_V) != 0) {
 					ProgramCounter = address;
 				}
 			}
@@ -2845,25 +2982,123 @@ void Group_1(BYTE opcode)
 		//END BVS
 
 		//START BMI
+		case 0xF7:
+			//HB = fetch();
+			LB = fetch();
+			offset = (WORD)LB;
+			if ((offset & 0x80) != 0) {
+				offset += 0xFF00;
+			}
+			address = ProgramCounter + offset;//CHECK
+											  //address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				//ProgramCounter = Memory[address];
+				if ((Flags & FLAG_N) != 0) {
+					ProgramCounter = address;
+				}
+			}
+			break;
 		//END BMI
 
 		//START BPL
+		case 0xF8:
+			//HB = fetch();
+			LB = fetch();
+			offset = (WORD)LB;
+			if ((offset & 0x80) != 0) {
+				offset += 0xFF00;
+			}
+			address = ProgramCounter + offset;//CHECK
+											  //address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				//ProgramCounter = Memory[address];
+				if ((Flags & FLAG_N) == 0) {
+					ProgramCounter = address;
+				}
+			}
+			break;
 		//END BPL
 
 		//START BGE
+		case 0xF9:
+			//HB = fetch();
+			LB = fetch();
+			offset = (WORD)LB;
+			if ((offset & 0x80) != 0) {
+				offset += 0xFF00;
+			}
+			address = ProgramCounter + offset;//CHECK
+											  //address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				//ProgramCounter = Memory[address];
+				if ( ((Flags & FLAG_N) != 0) || 
+					 ((Flags & FLAG_Z) != 0)) {
+					ProgramCounter = address;
+				}
+			}
+			break;
 		//END BGE
 
 		//START BLE
+		case 0xFA:
+			//HB = fetch();
+			LB = fetch();
+			offset = (WORD)LB;
+			if ((offset & 0x80) != 0) {
+				offset += 0xFF00;
+			}
+			address = ProgramCounter + offset;//CHECK
+											  //address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				//ProgramCounter = Memory[address];
+				if (((Flags & FLAG_N) == 0) ||
+					((Flags & FLAG_Z) != 0)) {
+					ProgramCounter = address;
+				}
+			}
+			break;
 		//END BLE
 
 		//START BGT
+		case 0xFB:
+			//HB = fetch();
+			LB = fetch();
+			offset = (WORD)LB;
+			if ((offset & 0x80) != 0) {
+				offset += 0xFF00;
+			}
+			address = ProgramCounter + offset;//CHECK
+											  //address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				//ProgramCounter = Memory[address];
+				if (((Flags & FLAG_N) != 0) ||
+					((Flags & FLAG_Z) == 0)) {
+					ProgramCounter = address;
+				}
+			}
+			break;
 		//END BGT
 
 		//START BLT
+		case 0xFC:
+			//HB = fetch();
+			LB = fetch();
+			offset = (WORD)LB;
+			if ((offset & 0x80) != 0) {
+				offset += 0xFF00;
+			}
+			address = ProgramCounter + offset;//CHECK
+											  //address += (WORD)((WORD)HB << 8) + LB;
+			if (address >= 0 && address < MEMORY_SIZE) {
+				//ProgramCounter = Memory[address];
+				if (((Flags & FLAG_N) == 0) ||
+					((Flags & FLAG_Z) == 0)) {
+					ProgramCounter = address;
+				}
+			}
+			break;
 		//END BLT
 
-		//START BGT
-		//END BGT
 
 		
 
@@ -2893,33 +3128,7 @@ void Group_1(BYTE opcode)
 
 		
 
-		//START JSR
-		case 0xE9:
-			HB = fetch();
-			LB = fetch();
-			address = ((WORD)HB << 8) + (WORD)LB;
-				if ((StackPointer >= 2) && (StackPointer < MEMORY_SIZE)) {
-					Memory[StackPointer] = (BYTE)(ProgramCounter & 0xFF);
-					StackPointer--;
-					Memory[StackPointer] = (BYTE)((ProgramCounter >> 8) & 0xFF);
-					StackPointer--;
-					//ProgramCounter = address;
-			}
-				ProgramCounter = address;
-			break;
-		//END JSR
-
-		//START RTN
-		case 0xDB:
-			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 2)) {
-				StackPointer++;
-				HB = Memory[StackPointer];
-				StackPointer++;
-				LB = Memory[StackPointer];
-				ProgramCounter = ((WORD)HB << 8) + (WORD)LB;
-			}
-			break;
-		//END RTN
+		
 
 		//START INCA
 		//case 0xD2://INCA
