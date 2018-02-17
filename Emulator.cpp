@@ -2063,7 +2063,7 @@ void Group_1(BYTE opcode)
 			set_flag_z(Memory[address]);
 			break;
 
-		case 0xB8:
+		case 0xB8://com abs y
 			address += Index_Registers[REGISTER_Y];
 			HB = fetch();
 			LB = fetch();
@@ -2536,12 +2536,14 @@ void Group_1(BYTE opcode)
 		case 0xE1://may need to check if wraparound
 			Index_Registers[REGISTER_X]--;
 			set_flag_z(Index_Registers[REGISTER_X]);
+			break;
 			//END DEX
 
 			//START INX
 		case 0xE2://may need to check if wraparound
 			Index_Registers[REGISTER_X]++;
 			set_flag_z(Index_Registers[REGISTER_X]);
+			break;
 			//END INX
 
 		//START MAY
@@ -2563,12 +2565,14 @@ void Group_1(BYTE opcode)
 		case 0xE3://may need to check if wraparound
 			Index_Registers[REGISTER_Y]--;
 			set_flag_z(Index_Registers[REGISTER_Y]);
+			break;
 			//END DEY
 
 			//START INCY
 		case 0xE4://may need to check if wraparound
 			Index_Registers[REGISTER_Y]++;
 			set_flag_z(Index_Registers[REGISTER_Y]);
+			break;
 			//END INCY
 
 			//START LODS
