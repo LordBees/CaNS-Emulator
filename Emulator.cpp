@@ -878,14 +878,31 @@ void SAR(WORD address) {
 	else {
 		Flags = Flags & (0xFF - FLAG_C);
 	}
-	Memory[address] = (Memory[address] >> 1) & 0x7f;
+	Memory[address] = (Memory[address] >> 1) & 0x7F;//do bit shift and sign
+
 	if ((Flags & FLAG_N) == FLAG_N) {//check for neg flag then shift
 		Memory[address] = Memory[address] | 0x80;
 	}
+	//do flags
 	//Memory[address] = (BYTE)temp_word;
 	set_flag_n(Memory[address]);
 	set_flag_z(Memory[address]);
 }
+/*
+if ((Registers[REGISTER_A] & 0x01) == 0x01) {
+Flags = Flags | FLAG_C;
+}
+else {
+Flags = Flags & (0xFF - FLAG_C);
+}
+Registers[REGISTER_A] = (Registers[REGISTER_A] >> 1) & 0x7F;
+
+if ((Flags & FLAG_N) == FLAG_N) {
+Registers[REGISTER_A] = Registers[REGISTER_A] | 0x80;
+}
+set_flag_n(Registers[REGISTER_A]);
+set_flag_z(Registers[REGISTER_A]);
+*/
 //END SAR_OPT
 
 //START COM_OPT
@@ -907,6 +924,116 @@ void COM(WORD address) {
 	
 }
 //END COM_OPT
+
+//START RAL_OPT
+void RAL(WORD address) {
+	WORD temp_word;
+
+	//Saved_Flags = Flags;
+	temp_word = (Memory[address] << 1);
+	//if ((Saved_Flags&FLAG_C) == FLAG_C) {
+	//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
+	//}
+	if (temp_word >= 0x100)//if overflowed set flag
+	{
+		//Flags = Flags | FLAG_C;
+		temp_word = temp_word | 0x01;
+	}
+	//else {
+	//	Flags = Flags & (0xFF - FLAG_C);
+	//}
+
+	Memory[address] = (BYTE)temp_word;
+	set_flag_n(Memory[address]);
+	set_flag_z(Memory[address]);
+}
+//END RAL_OPT
+
+//START ROR_OPT
+void ROR(WORD address) {
+	WORD temp_word;
+	temp_word = (Memory[address] >> 1);
+	//if ((Saved_Flags&FLAG_C) == FLAG_C) {
+	//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
+	//}
+	if ((Memory[address] & 0x01) != 0)//if underflowed set flag
+	{
+		//Flags = Flags | FLAG_C;
+		temp_word = temp_word | 0x80;//set MSB as LSB was 1
+	}
+	//else {
+	//	Flags = Flags & (0xFF - FLAG_C);
+	//}
+
+	Memory[address] = (BYTE)temp_word;
+	set_flag_n(Memory[address]);
+	set_flag_z(Memory[address]);
+}
+//END ROR_OPT
+
+//START LDX_OPT
+void LDX(WORD address) {
+	//set_flag_
+
+	if (address >= 0 && address < MEMORY_SIZE) {
+		Index_Registers[REGISTER_X] = Memory[address];
+	}
+	set_flag_n(Index_Registers[REGISTER_X]);
+	set_flag_z(Index_Registers[REGISTER_X]);
+	//address += Index_Registers[]
+}
+//END LDX_OPT
+
+//START STX_OPT
+void STX(WORD address) {
+	//data = fetch();
+	//Memory[data] = Registers[REGISTER_A];
+	if (address >= 0 && address < MEMORY_SIZE) {
+		Memory[address] = Index_Registers[REGISTER_X];
+	}
+
+	//set_flag_n(Registers[REGISTER_A]);
+	//set_flag_z(Registers[REGISTER_A]);
+	set_flag_n(Index_Registers[REGISTER_X]);
+	set_flag_z(Index_Registers[REGISTER_X]);
+}
+//END STX_OPT
+
+//START LODS_OPT
+void LODS(WORD address) {
+	if (address >= 0 && address < MEMORY_SIZE - 1) {
+		StackPointer = (WORD)Memory[address] << 8;
+		StackPointer += Memory[address + 1];
+	}
+	set_flag_n_word(StackPointer);
+	set_flag_z_word(StackPointer);
+}
+//END LODS_OPT
+
+//START PUSH_OPT
+void PUSH(BYTE REG_TO_PUSH) {
+	if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
+		Memory[StackPointer] = Registers[REG_TO_PUSH];
+		StackPointer--;
+	}
+}
+//END PUSH_OPT
+
+//START POP_OPT
+void POP(WORD REG_TO_POP) {
+	if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
+		StackPointer++;
+		Registers[REG_TO_POP] = Memory[StackPointer];
+	}
+}
+//END POP_OPT
+
+//START MV_OPT
+void MV(BYTE REG_TO_MV) {
+	Registers[REG_TO_MV] = fetch();// Memory[fetch()];
+	set_flag_n(Registers[REG_TO_MV]);
+	set_flag_z(Registers[REG_TO_MV]);
+}
 
 ////END   FUNCTIONS
 
@@ -1579,102 +1706,24 @@ void Group_1(BYTE opcode)
 
 		//START RAL
 		case 0x99://ral abs
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			//Saved_Flags = Flags;
-
-			temp_word = (Memory[address] << 1);
-			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
-			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
-			//}
-			if (temp_word >= 0x100)//if overflowed set flag
-			{
-				//Flags = Flags | FLAG_C;
-				temp_word = temp_word | 0x01;
-			}
-			//else {
-			//	Flags = Flags & (0xFF - FLAG_C);
-			//}
-
-			Memory[address] = (BYTE)temp_word;
-			set_flag_n(Memory[address]);
-			set_flag_z(Memory[address]);
+			address += get_addr_abs();
+			RAL(address);
+			
 			break;
 
 		case 0xA9://ral abs x
-			address += Index_Registers[REGISTER_X];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			//Saved_Flags = Flags;
-
-			temp_word = (Memory[address] << 1);
-			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
-			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
-			//}
-			if (temp_word >= 0x100)//if overflowed set flag
-			{
-				//Flags = Flags | FLAG_C;
-				temp_word = temp_word | 0x01;
-			}
-			//else {
-			//	Flags = Flags & (0xFF - FLAG_C);
-			//}
-
-			Memory[address] = (BYTE)temp_word;
-			set_flag_n(Memory[address]);
-			set_flag_z(Memory[address]);
+			address += get_addr_absx();
+			RAL(address);
 			break;
 
 		case 0xB9://ral abs y
-			address += Index_Registers[REGISTER_Y];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			//Saved_Flags = Flags;
-
-			temp_word = (Memory[address] << 1);
-			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
-			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
-			//}
-			if (temp_word >= 0x100)//if overflowed set flag
-			{
-				//Flags = Flags | FLAG_C;
-				temp_word = temp_word | 0x01;
-			}
-			//else {
-			//	Flags = Flags & (0xFF - FLAG_C);
-			//}
-
-			Memory[address] = (BYTE)temp_word;
-			set_flag_n(Memory[address]);
-			set_flag_z(Memory[address]);
+			address += get_addr_absy();
+			RAL(address);
 			break;
 
 		case 0xC9://ral abs x y
-			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8) + Index_Registers[REGISTER_X];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			//Saved_Flags = Flags;
-
-			temp_word = (Memory[address] << 1);
-			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
-			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
-			//}
-			if (temp_word >= 0x100)//if overflowed set flag
-			{
-				//Flags = Flags | FLAG_C;
-				temp_word = temp_word | 0x01;
-			}
-			//else {
-			//	Flags = Flags & (0xFF - FLAG_C);
-			//}
-
-			Memory[address] = (BYTE)temp_word;
-			set_flag_n(Memory[address]);
-			set_flag_z(Memory[address]);
+			address += get_addr_absxy();
+			RAL(address);
 			break;
 		//END RAL
 
@@ -1703,99 +1752,20 @@ void Group_1(BYTE opcode)
 
 		//START ROR
 		case 0x9A://ror abs
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			//Saved_Flags = Flags;
-
-			temp_word = (Memory[address] >> 1);
-			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
-			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
-			//}
-			if ((Memory[address] & 0x01) != 0)//if underflowed set flag
-			{
-				//Flags = Flags | FLAG_C;
-				temp_word = temp_word | 0x80;//set MSB as LSB was 1
-			}
-			//else {
-			//	Flags = Flags & (0xFF - FLAG_C);
-			//}
-
-			Memory[address] = (BYTE)temp_word;
-			set_flag_n(Memory[address]);
-			set_flag_z(Memory[address]);
+			address += get_addr_abs();
+			ROR(address);
 			break;
 		case 0xAA://ror abs x
-			address += Index_Registers[REGISTER_X];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			//Saved_Flags = Flags;
-
-			temp_word = (Memory[address] >> 1);
-			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
-			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
-			//}
-			if ((Memory[address] & 0x01) != 0)//if underflowed set flag
-			{
-				//Flags = Flags | FLAG_C;
-				temp_word = temp_word | 0x80;//set MSB as LSB was 1
-			}
-			//else {
-			//	Flags = Flags & (0xFF - FLAG_C);
-			//}
-
-			Memory[address] = (BYTE)temp_word;
-			set_flag_n(Memory[address]);
-			set_flag_z(Memory[address]);
+			address += get_addr_absx();
+			ROR(address);
 			break;
 		case 0xBA://ror abs y
-			address += Index_Registers[REGISTER_Y];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			//Saved_Flags = Flags;
-
-			temp_word = (Memory[address] >> 1);
-			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
-			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
-			//}
-			if ((Memory[address] & 0x01) != 0)//if underflowed set flag
-			{
-				//Flags = Flags | FLAG_C;
-				temp_word = temp_word | 0x80;//set MSB as LSB was 1
-			}
-			//else {
-			//	Flags = Flags & (0xFF - FLAG_C);
-			//}
-
-			Memory[address] = (BYTE)temp_word;
-			set_flag_n(Memory[address]);
-			set_flag_z(Memory[address]);
+			address += get_addr_absy();
+			ROR(address);
 			break;
 		case 0xCA://ror abs x y
-			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8) + Index_Registers[REGISTER_X];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			//Saved_Flags = Flags;
-
-			temp_word = (Memory[address] >> 1);
-			//if ((Saved_Flags&FLAG_C) == FLAG_C) {
-			//	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x01;
-			//}
-			if ((Memory[address] & 0x01) != 0)//if underflowed set flag
-			{
-				//Flags = Flags | FLAG_C;
-				temp_word = temp_word | 0x80;//set MSB as LSB was 1
-			}
-			//else {
-			//	Flags = Flags & (0xFF - FLAG_C);
-			//}
-
-			Memory[address] = (BYTE)temp_word;
-			set_flag_n(Memory[address]);
-			set_flag_z(Memory[address]);
+			address += get_addr_absxy();
+			ROR(address);
 			break;
 		//END ROR
 
@@ -1846,138 +1816,55 @@ void Group_1(BYTE opcode)
 			break;
 
 		case 0x41: //LDX abs
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			//set_flag_
-
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Index_Registers[REGISTER_X] = Memory[address];
-			}
-			set_flag_n(Index_Registers[REGISTER_X]);
-			set_flag_z(Index_Registers[REGISTER_X]);
-			//address += Index_Registers[]
+			address += get_addr_abs();
+			LDX(address);
 			break;
 
 		case 0x51: //LDX abs x
-			address += Index_Registers[REGISTER_X];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Index_Registers[REGISTER_X] = Memory[address];
-			}
-			set_flag_n(Index_Registers[REGISTER_X]);
-			set_flag_z(Index_Registers[REGISTER_X]);
+			address += get_addr_absx();
+			LDX(address);
 			break;
 
 		case 0x61: //LDX abs y
-			address += Index_Registers[REGISTER_Y];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Index_Registers[REGISTER_X] = Memory[address];
-			}
-			set_flag_n(Index_Registers[REGISTER_X]);
-			set_flag_z(Index_Registers[REGISTER_X]);
+			address += get_addr_absy();
+			LDX(address);
 			break;
 
 		case 0x71: //LDX abs x y
-			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8) + Index_Registers[REGISTER_X];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Index_Registers[REGISTER_X] = Memory[address];
-			}
-			set_flag_n(Index_Registers[REGISTER_X]);
-			set_flag_z(Index_Registers[REGISTER_X]);
+			address += get_addr_absxy();
+			LDX(address);
 			break;
 
 		case 0x81: //LDX (ind),x y 
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			HB = Memory[address];
-			LB = Memory[address + 1];
-			address += (WORD)((WORD)HB << 8) + LB;
-			address += Index_Registers[REGISTER_X];
-			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8);
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Index_Registers[REGISTER_X] = Memory[address];
-			}
-			set_flag_n(Index_Registers[REGISTER_X]);
-			set_flag_z(Index_Registers[REGISTER_X]);
+			address += get_addr_indxy();
+			LDX(address);
 			break;
 		//END LDX
 
 		//START STX
 		case 0x02://STX abs
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-
-			//data = fetch();
-			//Memory[data] = Registers[REGISTER_A];
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address] = Index_Registers[REGISTER_X];
-			}
-
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
+			address += get_addr_abs();
+			STX(address);
 			break;
 
 		case 0x12://STX abs X
-			address += Index_Registers[REGISTER_X];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address] = Index_Registers[REGISTER_X];
-			}
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
+			address += get_addr_absx();
+			STX(address);
 			break;
 
 		case 0x22://STX abs Y
-			address += Index_Registers[REGISTER_Y];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address] = Index_Registers[REGISTER_X];
-			}
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
+			address += get_addr_absy();
+			STX(address);
 			break;
 
 		case 0x32://STX abs X Y
-			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8) + Index_Registers[REGISTER_X];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address] = Index_Registers[REGISTER_X];
-			}
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
+			address += get_addr_absxy();
+			STX(address);
 			break;
 
 		case 0x42://STX (ind) abs X Y
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			HB = Memory[address];
-			LB = Memory[address + 1];
-			address += (WORD)((WORD)HB << 8) + LB;
-			address += Index_Registers[REGISTER_X];
-			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8);
-			if (address >= 0 && address < MEMORY_SIZE) {
-				Memory[address] = Index_Registers[REGISTER_X];
-			}
-			set_flag_n(Registers[REGISTER_A]);
-			set_flag_z(Registers[REGISTER_A]);
+			address += get_addr_indxy();
+			STX(address);
 			break;
 		//END STX
 
@@ -2034,74 +1921,25 @@ void Group_1(BYTE opcode)
 
 			break;
 		case 0xAD://LODS abs
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE - 1) {
-				StackPointer = (WORD)Memory[address] << 8;
-				StackPointer += Memory[address + 1];
-			}
-			set_flag_n_word(StackPointer);
-			set_flag_z_word(StackPointer);
-
+			address += get_addr_abs();
+			LODS(address);
 			break;
 		case 0xBD://lods abs x
-			address += Index_Registers[REGISTER_X];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE - 1) {
-				StackPointer = (WORD)Memory[address] << 8;
-				StackPointer += Memory[address + 1];
-			}
-			set_flag_n_word(StackPointer);
-			set_flag_z_word(StackPointer);
+			address += get_addr_absx();
+			LODS(address);
 			break;
 		case 0xCD://lods abs y
-			address += Index_Registers[REGISTER_Y];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE - 1) {
-				StackPointer = (WORD)Memory[address] << 8;
-				StackPointer += Memory[address + 1];
-			}
-			set_flag_n_word(StackPointer);
-			set_flag_z_word(StackPointer);
+			address += get_addr_absy();
+			LODS(address);
 			break;
 		case 0xDD://lods abs x y
-			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8) + Index_Registers[REGISTER_X];
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			if (address >= 0 && address < MEMORY_SIZE - 1) {
-				StackPointer = (WORD)Memory[address] << 8;
-				StackPointer += Memory[address + 1];
-			}
-			set_flag_n_word(StackPointer);
-			set_flag_z_word(StackPointer);
+			address += get_addr_absxy();
+			LODS(address);
 			break;
 
 		case 0xED://lods ind abs x y
-			//break;
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
-			HB = Memory[address];
-			LB = Memory[address + 1];
-			address += (WORD)((WORD)HB << 8) + LB;
-			address += Index_Registers[REGISTER_X];
-			address += (WORD)((WORD)Index_Registers[REGISTER_Y] << 8);
-			if (address >= 0 && address < MEMORY_SIZE - 1) {
-				StackPointer = (WORD)Memory[address] << 8;
-				StackPointer += Memory[address + 1];
-			}
-			set_flag_n_word(StackPointer);
-			set_flag_z_word(StackPointer);
-			//set_flag_n(Registers[REGISTER_A]);
-			//set_flag_z(Registers[REGISTER_A]);
-			//set_flag_n_word(StackPointer);
-			//set_flag_z_word(StackPointer);
+			address += get_addr_indxy();
+			LODS(address);
 			break;
 			//END LODS
 
@@ -2114,7 +1952,7 @@ void Group_1(BYTE opcode)
 		//START CSA
 		case 0x0F:
 			Registers[REGISTER_A] = Flags;
-			printf("|%X|", Flags);
+			//printf("|%X|", Flags);
 			break;
 		//END CSA
 		
@@ -2122,10 +1960,7 @@ void Group_1(BYTE opcode)
 
 		//START PUSH
 		case 0x9E:
-			if ((StackPointer >= 1)&& (StackPointer < MEMORY_SIZE)){
-				Memory[StackPointer] = Registers[REGISTER_A];
-				StackPointer--;
-			}
+			PUSH(REGISTER_A);
 			break;
 		case 0xAE:
 			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
@@ -2134,43 +1969,25 @@ void Group_1(BYTE opcode)
 			}
 			break;
 		case 0xBE:
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
-				Memory[StackPointer] = Registers[REGISTER_B];
-				StackPointer--;
-			}
+			PUSH(REGISTER_B);
 			break;
 		case 0xCE:
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
-				Memory[StackPointer] = Registers[REGISTER_C];
-				StackPointer--;
-			}
+			PUSH(REGISTER_C);
 			break;
 		case 0xDE:
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
-				Memory[StackPointer] = Registers[REGISTER_D];
-				StackPointer--;
-			}
+			PUSH(REGISTER_D);
 			break;
 		case 0xEE:
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
-				Memory[StackPointer] = Registers[REGISTER_E];
-				StackPointer--;
-			}
+			PUSH(REGISTER_E);
 			break;
 		case 0xFE:
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
-				Memory[StackPointer] = Registers[REGISTER_F];
-				StackPointer--;
-			}
+			PUSH(REGISTER_F);
 			break;
 		//END PUSH
 
 		//START POP
 		case 0x9F:
-			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE -1)) {
-				StackPointer++;
-				Registers[REGISTER_A] = Memory[StackPointer];
-			}
+			POP(REGISTER_A);
 			break;
 		case 0xAF:
 			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
@@ -2179,34 +1996,19 @@ void Group_1(BYTE opcode)
 			}
 			break;
 		case 0xBF:
-			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
-				StackPointer++;
-				Registers[REGISTER_B] = Memory[StackPointer];
-			}
+			POP(REGISTER_B);
 			break;
 		case 0xCF:
-			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
-				StackPointer++;
-				Registers[REGISTER_C] = Memory[StackPointer];
-			}
+			POP(REGISTER_C);
 			break;
 		case 0xDF:
-			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
-				StackPointer++;
-				Registers[REGISTER_D] = Memory[StackPointer];
-			}
+			POP(REGISTER_D);
 			break;
 		case 0xEF:
-			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
-				StackPointer++;
-				Registers[REGISTER_E] = Memory[StackPointer];
-			}
+			POP(REGISTER_E);
 			break;
 		case 0xFF:
-			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
-				StackPointer++;
-				Registers[REGISTER_F] = Memory[StackPointer];
-			}
+			POP(REGISTER_F);
 			break;
 		//END POP
 
@@ -2243,9 +2045,7 @@ void Group_1(BYTE opcode)
 
 			//START JMP
 		case 0xEA://chk
-			HB = fetch();
-			LB = fetch();
-			address += (WORD)((WORD)HB << 8) + LB;
+			address += get_addr_abs();
 			if (address >= 0 && address < MEMORY_SIZE) {
 				//ProgramCounter = Memory[address];
 				ProgramCounter = address;
@@ -2255,29 +2055,19 @@ void Group_1(BYTE opcode)
 
 		//START MV //is #
 		case 0x07:
-			Registers[REGISTER_B] = fetch();// Memory[fetch()];
-			set_flag_n(Registers[REGISTER_B]);
-			set_flag_z(Registers[REGISTER_B]);
+			MV(REGISTER_B);
 			break;
 		case 0x08:
-			Registers[REGISTER_C] = fetch();// = Memory[fetch()];
-			set_flag_n(Registers[REGISTER_C]);
-			set_flag_z(Registers[REGISTER_C]);
+			MV(REGISTER_C);
 			break;
 		case 0x09:
-			Registers[REGISTER_D] = fetch();// = Memory[fetch()];
-			set_flag_n(Registers[REGISTER_D]);
-			set_flag_z(Registers[REGISTER_D]);
+			MV(REGISTER_D);
 			break;
 		case 0x0A:
-			Registers[REGISTER_E] = fetch();// = Memory[fetch()];
-			set_flag_n(Registers[REGISTER_E]);
-			set_flag_z(Registers[REGISTER_E]);
+			MV(REGISTER_E);
 			break;
 		case 0x0B:
-			Registers[REGISTER_F] = fetch();// = Memory[fetch()];
-			set_flag_n(Registers[REGISTER_F]);
-			set_flag_z(Registers[REGISTER_F]);
+			MV(REGISTER_F);
 			break;
 		//END MV
 
