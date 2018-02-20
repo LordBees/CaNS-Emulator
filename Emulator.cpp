@@ -672,7 +672,7 @@ void ADD_REG(BYTE REG_TO_ADD) {
 	
 }
 //START SUB_OPT
-void SUB_REG(WORD REG_TO_SUB) {
+void SUB_REG(BYTE REG_TO_SUB) {
 	WORD temp_word;
 	WORD param1;
 	WORD param2;
@@ -705,7 +705,7 @@ void SUB_REG(WORD REG_TO_SUB) {
 //END SUB_OPT
 
 //START COMPARE_OPT
-void CMP_REG(WORD REG_TO_CMP) {
+void CMP_REG(BYTE REG_TO_CMP) {
 	WORD temp_word;
 	WORD param1;
 	WORD param2;
@@ -735,28 +735,28 @@ void CMP_REG(WORD REG_TO_CMP) {
 //END COMPARTE_OPT
 
 //START OR_OPT
-void OR(WORD REG_TO_OR) {
+void OR(BYTE REG_TO_OR) {
 	Registers[REGISTER_A] = Registers[REGISTER_A] | Registers[REG_TO_OR];
 	set_flag_n(Registers[REGISTER_A]);
 	set_flag_z(Registers[REGISTER_A]);
 }
 //END OR_OPT
 //START AND_OPT
-void AND(WORD REG_TO_AND) {
+void AND(BYTE REG_TO_AND) {
 	Registers[REGISTER_A] = Registers[REGISTER_A] & Registers[REG_TO_AND];
 	set_flag_n(Registers[REGISTER_A]);
 	set_flag_z(Registers[REGISTER_A]);
 }
 //END AND_OPT
 //START EOR_OPT
-void EOR(WORD REG_TO_EOR) {
+void EOR(BYTE REG_TO_EOR) {
 	Registers[REGISTER_A] = Registers[REGISTER_A] ^ Registers[REG_TO_EOR];
 	set_flag_n(Registers[REGISTER_A]);
 	set_flag_z(Registers[REGISTER_A]);
 }
 //END EOR_OPT
 //START BT_OPT
-void BT(WORD REG_TO_BT) {
+void BT(BYTE REG_TO_BT) {
 	BYTE data;
 	data = Registers[REGISTER_A] & Registers[REG_TO_BT];
 	//printf("|a/b %X&%X|", Registers[REGISTER_A], Registers[REGISTER_B]);
@@ -872,36 +872,59 @@ void ASL(WORD address) {
 //START SAR_OPT
 //NOTE - MAY NOT WORK
 void SAR(WORD address) {
+	BYTE temp = Memory[address];
 	if ((Memory[address] & 0x01) == 0x01) {//underflow set carry
 		Flags = Flags | FLAG_C;
 	}
 	else {
 		Flags = Flags & (0xFF - FLAG_C);
 	}
-	Memory[address] = (Memory[address] >> 1) & 0x7F;//do bit shift and sign
-
-	if ((Flags & FLAG_N) == FLAG_N) {//check for neg flag then shift
-		Memory[address] = Memory[address] | 0x80;
+	Memory[address] = Memory[address] >> 1;
+	if ((temp & 0x80) == 0x80) {
+		Memory[address] |= 1 << 7;
 	}
-	//do flags
-	//Memory[address] = (BYTE)temp_word;
-	set_flag_n(Memory[address]);
-	set_flag_z(Memory[address]);
+		set_flag_n(Memory[address]);
+		set_flag_z(Memory[address]);
+}
+void x()
+{
+	WORD address;
+	if (address >= 0 && address < MEMORY_SIZE) {
+
+		if ((Memory[address] & 0x01) == 0x01) {//underflow set carry
+			Flags = Flags | FLAG_C;
+		}
+		else {
+			Flags = Flags & (0xFF - FLAG_C);
+		}
+		Memory[address] = ((Memory[address] >> 1) & 0x7F);//do bit shift and sign
+
+		if ((Flags & FLAG_N) == FLAG_N) {//check for neg flag then shift
+			Memory[address] = (Memory[address] | 0x80);
+
+		}
+		//do flags
+		//Memory[address] = (BYTE)temp_word;
+		//Flags = Flags & (0xFF - FLAG_C);
+		//set_flag_n(Memory[address]);
+		set_flag_z(Memory[address]);
+
+	}
 }
 /*
-if ((Registers[REGISTER_A] & 0x01) == 0x01) {
-Flags = Flags | FLAG_C;
-}
-else {
-Flags = Flags & (0xFF - FLAG_C);
-}
-Registers[REGISTER_A] = (Registers[REGISTER_A] >> 1) & 0x7F;
+	if ((Registers[REGISTER_A] & 0x01) == 0x01) {
+	Flags = Flags | FLAG_C;
+	}
+	else {
+	Flags = Flags & (0xFF - FLAG_C);
+	}
+	Registers[REGISTER_A] = (Registers[REGISTER_A] >> 1) & 0x7F;
 
-if ((Flags & FLAG_N) == FLAG_N) {
-Registers[REGISTER_A] = Registers[REGISTER_A] | 0x80;
-}
-set_flag_n(Registers[REGISTER_A]);
-set_flag_z(Registers[REGISTER_A]);
+	if ((Flags & FLAG_N) == FLAG_N) {
+	Registers[REGISTER_A] = Registers[REGISTER_A] | 0x80;
+	}
+	set_flag_n(Registers[REGISTER_A]);
+	set_flag_z(Registers[REGISTER_A]);
 */
 //END SAR_OPT
 
@@ -921,7 +944,6 @@ void COM(WORD address) {
 	Memory[address] = (BYTE)temp_word;//moved above flags from below
 	set_flag_n(Memory[address]);
 	set_flag_z(Memory[address]);
-	
 }
 //END COM_OPT
 
@@ -1020,7 +1042,7 @@ void PUSH(BYTE REG_TO_PUSH) {
 //END PUSH_OPT
 
 //START POP_OPT
-void POP(WORD REG_TO_POP) {
+void POP(BYTE REG_TO_POP) {
 	if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
 		StackPointer++;
 		Registers[REG_TO_POP] = Memory[StackPointer];
@@ -1073,27 +1095,27 @@ void Group_1(BYTE opcode)
 			break;
 
 		case 0xA0: //LDA abs
-			address += get_addr_abs();
+			address = get_addr_abs();
 			LD_REG(address, REGISTER_A);// , address);
 			break;
 
 		case 0xB0: //LDA abs x
-			address += get_addr_absx();
+			address = get_addr_absx();
 			LD_REG(address, REGISTER_A);// , address);
 			break;
 
 		case 0xC0: //LDA abs y
-			address += get_addr_absy();
+			address = get_addr_absy();
 			LD_REG(address, REGISTER_A);// , address);
 			break;
 
 		case 0xD0: //LDA abs x y
-			address += get_addr_absxy();
+			address = get_addr_absxy();
 			LD_REG(address, REGISTER_A);// , address);
 			break;
 
 		case 0xE0: //LDA (ind),x y 
-			address += get_addr_indxy();
+			address = get_addr_indxy();
 			LD_REG(address, REGISTER_A);// , address);
 			break;
 		//END LDA
@@ -1624,7 +1646,9 @@ void Group_1(BYTE opcode)
 			//note may still not work??
 		case 0x97://sar abs
 			address += get_addr_abs();
+			printf("address[contents] = %X[%X]", address, Memory[address]);
 			SAR(address);
+			printf("address[contents] = %X[%X]", address, Memory[address]);
 			
 			break;
 
@@ -1916,6 +1940,11 @@ void Group_1(BYTE opcode)
 			data = fetch();
 			StackPointer = data << 8;
 			StackPointer += fetch();
+			//StackPointer = (WORD)fetch() << 8;
+			//StackPointer += fetch();
+			//HB = fetch();
+			//LB = fetch();
+			//StackPointer = (WORD)((WORD)HB << 8) + LB;
 			set_flag_n_word(StackPointer);
 			set_flag_z_word(StackPointer);
 
@@ -2073,10 +2102,13 @@ void Group_1(BYTE opcode)
 
 		//START JSR
 		case 0xE9:
-			HB = fetch();
-			LB = fetch();
-			address = ((WORD)HB << 8) + (WORD)LB;
+			//HB = fetch();
+			//LB = fetch();
+			//address = ((WORD)HB << 8) + (WORD)LB;
+			address += get_addr_abs();
+
 			if ((StackPointer >= 2) && (StackPointer < MEMORY_SIZE)) {
+
 				Memory[StackPointer] = (BYTE)(ProgramCounter & 0xFF);
 				StackPointer--;
 				Memory[StackPointer] = (BYTE)((ProgramCounter >> 8) & 0xFF);
@@ -2482,31 +2514,19 @@ Flags = Flags & (0xFF - FLAG_Z);
 
 		//START SWI
 		case 0x16:
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
+			if ((StackPointer >= 7) && (StackPointer < MEMORY_SIZE)) {
 				Memory[StackPointer] = Registers[REGISTER_A];
 				StackPointer--;
-			}
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
 				Memory[StackPointer] = Registers[REGISTER_B];
 				StackPointer--;
-			}
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
 				Memory[StackPointer] = Registers[REGISTER_C];
 				StackPointer--;
-			}
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
 				Memory[StackPointer] = Registers[REGISTER_D];
 				StackPointer--;
-			}
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
 				Memory[StackPointer] = Registers[REGISTER_E];
 				StackPointer--;
-			}
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
 				Memory[StackPointer] = Registers[REGISTER_F];
 				StackPointer--;
-			}
-			if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
 				Memory[StackPointer] = Flags;
 				StackPointer--;
 			}
@@ -2514,8 +2534,23 @@ Flags = Flags & (0xFF - FLAG_Z);
 
 		//START RTI
 		case 0x17:
+			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
+				StackPointer++;
+				Flags = Memory[StackPointer];
+				StackPointer++;
+				Registers[REGISTER_A] = Memory[StackPointer];
+				StackPointer++;
+				Registers[REGISTER_B] = Memory[StackPointer];
+				StackPointer++;
+				Registers[REGISTER_C] = Memory[StackPointer];
+				StackPointer++;
+				Registers[REGISTER_D] = Memory[StackPointer];
+				StackPointer++;
+				Registers[REGISTER_E] = Memory[StackPointer];
+				StackPointer++;
+				Registers[REGISTER_F] = Memory[StackPointer];
+			}
 			break;
-		
 		//END RTI
 
 
@@ -2716,6 +2751,20 @@ void emulate()
 		printf("%02X ", Index_Registers[REGISTER_X]);
 		printf("%02X ", Index_Registers[REGISTER_Y]);
 		printf("%04X ", StackPointer);              // Print Stack Pointer
+		printf ("||0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X,0x%02X||",
+			Memory[TEST_ADDRESS_1],
+			Memory[TEST_ADDRESS_2],
+			Memory[TEST_ADDRESS_3],
+			Memory[TEST_ADDRESS_4],
+			Memory[TEST_ADDRESS_5],
+			Memory[TEST_ADDRESS_6],
+			Memory[TEST_ADDRESS_7],
+			Memory[TEST_ADDRESS_8],
+			Memory[TEST_ADDRESS_9],
+			Memory[TEST_ADDRESS_10],
+			Memory[TEST_ADDRESS_11],
+			Memory[TEST_ADDRESS_12]
+			);
 
 		if ((Flags & FLAG_I) == FLAG_I)	
 		{
