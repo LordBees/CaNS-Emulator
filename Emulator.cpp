@@ -1024,7 +1024,7 @@ void STX(WORD address) {
 //START LODS_OPT
 void LODS(WORD address) {
 	if (address >= 0 && address < MEMORY_SIZE - 1) {
-		StackPointer = (WORD)Memory[address] << 8;
+		StackPointer = (WORD)(Memory[address] << 8);
 		StackPointer += Memory[address + 1];
 	}
 	set_flag_n_word(StackPointer);
@@ -1646,9 +1646,9 @@ void Group_1(BYTE opcode)
 			//note may still not work??
 		case 0x97://sar abs
 			address += get_addr_abs();
-			printf("address[contents] = %X[%X]", address, Memory[address]);
+			//printf("address[contents] = %X[%X]", address, Memory[address]);
 			SAR(address);
-			printf("address[contents] = %X[%X]", address, Memory[address]);
+			//printf("address[contents] = %X[%X]", address, Memory[address]);
 			
 			break;
 
@@ -1937,14 +1937,15 @@ void Group_1(BYTE opcode)
 
 			//START LODS
 		case 0x9D://LODS #
-			data = fetch();
-			StackPointer = data << 8;
-			StackPointer += fetch();
+			//data = fetch();
+			//StackPointer = data << 8;
+			//StackPointer += fetch();
+
 			//StackPointer = (WORD)fetch() << 8;
 			//StackPointer += fetch();
-			//HB = fetch();
-			//LB = fetch();
-			//StackPointer = (WORD)((WORD)HB << 8) + LB;
+			HB = fetch();
+			LB = fetch();
+			StackPointer = (WORD)((WORD)HB << 8) + LB;
 			set_flag_n_word(StackPointer);
 			set_flag_z_word(StackPointer);
 
@@ -2016,6 +2017,7 @@ void Group_1(BYTE opcode)
 
 		//START POP
 		case 0x9F:
+			//printf("address[contents] = %X[%X]", address, Memory[address]);
 			POP(REGISTER_A);
 			break;
 		case 0xAF:
@@ -2102,17 +2104,44 @@ void Group_1(BYTE opcode)
 
 		//START JSR
 		case 0xE9:
+			//break;
 			//HB = fetch();
 			//LB = fetch();
 			//address = ((WORD)HB << 8) + (WORD)LB;
-			address += get_addr_abs();
+			address = get_addr_abs();
 
-			if ((StackPointer >= 2) && (StackPointer < MEMORY_SIZE)) {
+			if ((address >= 0) && (address < MEMORY_SIZE)) {
+			//if ((StackPointer >= 1) && (StackPointer < MEMORY_SIZE)) {
+				//HB = (BYTE)(ProgramCounter >> 8);
+				//LB = (BYTE)(ProgramCounter);
+				//Memory[StackPointer] = HB;
+				//StackPointer--;
+				//Memory[StackPointer] = LB;
+				//StackPointer--;
 
-				Memory[StackPointer] = (BYTE)(ProgramCounter & 0xFF);
+				HB = (BYTE)((ProgramCounter >> 8) & 0xFF);
+				LB = (BYTE)(ProgramCounter & 0xFF);
+				Memory[StackPointer] = HB;
 				StackPointer--;
+				Memory[StackPointer] = LB;
+				StackPointer--;
+				printf("!result  S+1 S  HB/LB -> %X[%X] %X[%X] %X/%X !", StackPointer+1, Memory[StackPointer+1], StackPointer, Memory[StackPointer],HB,LB);
+				
+				/*
 				Memory[StackPointer] = (BYTE)((ProgramCounter >> 8) & 0xFF);
+				//Memory[StackPointer] = (BYTE)(ProgramCounter & 0xFF);
+				printf("address[contents] = %X[%X]", StackPointer, Memory[StackPointer]);
 				StackPointer--;
+				//Memory[StackPointer] = (BYTE)((ProgramCounter >> 8) & 0xFF);
+				Memory[StackPointer] = (BYTE)(ProgramCounter & 0xFF);
+				printf("address[contents] = %X[%X]", StackPointer, Memory[StackPointer]);
+				StackPointer--;
+				*/
+				//Memory[StackPointer] = (BYTE)(ProgramCounter >> 8);
+				//StackPointer--;
+				//Memory[StackPointer] = (BYTE)(ProgramCounter);
+				//StackPointer--;
+
 				ProgramCounter = address;//swapped these
 			}
 			//ProgramCounter = address;
