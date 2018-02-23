@@ -2150,11 +2150,12 @@ void Group_1(BYTE opcode)
 
 			//START RTN
 		case 0xDB:
+			
 			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 2)) {
 				StackPointer++;
-				HB = Memory[StackPointer];
-				StackPointer++;
 				LB = Memory[StackPointer];
+				StackPointer++;
+				HB = Memory[StackPointer];
 				ProgramCounter = ((WORD)HB << 8) + (WORD)LB;
 			}
 			break;
