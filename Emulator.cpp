@@ -510,6 +510,13 @@ WORD get_addr_word() {
 	return 0;
 }
 
+/*
+* Function: get_addr_abs()
+* Description: gets the absolute address
+* Parameters: None
+* Returns: WORD address
+* Warnings:
+*/
 WORD get_addr_abs() {
 	BYTE LB = 0;
 	BYTE HB = 0;
@@ -519,6 +526,13 @@ WORD get_addr_abs() {
 	address += (WORD)((WORD)HB << 8) + LB;
 	return address;
 }
+/*
+* Function: get_addr_absx()
+* Description: gets the absolute address offset by register X
+* Parameters: None
+* Returns: WORD address
+* Warnings:
+*/
 WORD get_addr_absx() {
 	BYTE LB = 0;
 	BYTE HB = 0;
@@ -529,6 +543,13 @@ WORD get_addr_absx() {
 	address += (WORD)((WORD)HB << 8) + LB;
 	return address;
 }
+/*
+* Function: get_addr_absy()
+* Description: gets the absolute address offset by register Y
+* Parameters: None
+* Returns: WORD address
+* Warnings:
+*/
 WORD get_addr_absy() {
 	BYTE LB = 0;
 	BYTE HB = 0;
@@ -539,6 +560,13 @@ WORD get_addr_absy() {
 	address += (WORD)((WORD)HB << 8) + LB;
 	return address;
 }
+/*
+* Function: get_addr_absxy()
+* Description: gets the absolute address offset by register X and register Y
+* Parameters: None
+* Returns: WORD address
+* Warnings:
+*/
 WORD get_addr_absxy() {
 	BYTE LB = 0;
 	BYTE HB = 0;
@@ -549,6 +577,15 @@ WORD get_addr_absxy() {
 	address += (WORD)((WORD)HB << 8) + LB;
 	return address;
 }
+/*
+* Function: get_addr_indxy()
+* Description: gets the indirect address by 
+*------------: getting the absolute address of the address in memory
+*------------: then offsetting the result by register X and register Y
+* Parameters: None
+* Returns: WORD address
+* Warnings:
+*/
 WORD get_addr_indxy() {
 	BYTE LB = 0;
 	BYTE HB = 0;
@@ -576,7 +613,7 @@ WORD get_addr_indxy() {
 */
 //START LDA_OPT
 /*
-* Function: LD_REG
+* Function: LD_REG()
 * Description: Loads a register with a location in memory
 * Parameters: (WORD) address, (BYTE) REG_TO_LOAD
 * Returns: None
@@ -598,7 +635,7 @@ void LD_REG(WORD address, BYTE REG_TO_LOAD){//, BYTE SRC){//,bool REGTOLOAD_AS_A
 
 //START STO_OPT
 /*
-* Function: ST_REG
+* Function: ST_REG()
 * Description: Stores a given register in a given memory location
 * Parameters: (WORD) address,(BYTE) REG_TO_STO
 * Returns: None
@@ -616,7 +653,7 @@ void ST_REG(WORD address, BYTE REG_TO_STO) {
 
 //START ADD_OPT
 /*
-* Function: ADD_OPT
+* Function: ADD_OPT()
 * Description: Add register A to a given register, then store the result in register A
 * Parameters: (BYTE) REG_TO_ADD
 * Returns: None
@@ -655,7 +692,7 @@ void ADD_REG(BYTE REG_TO_ADD) {
 //START SUB_OPT
 
 /*
-* Function: SUB_OPT
+* Function: SUB_OPT()
 * Description: Subtract a given register from register A, then store the result in register A
 * Parameters: (BYTE) REG_TO_ADD
 * Returns: None
@@ -695,8 +732,9 @@ void SUB_REG(BYTE REG_TO_SUB) {
 
 //START COMPARE_OPT
 /*
-* Function: CMP_REG
-* Description: Compares A given register to register A (subtraction), then sets flags based on the result
+* Function: CMP_REG()
+* Description: Compares a given register to register A (subtraction)
+* -----------: then sets flags based on the result.
 * Parameters: (BYTE) REG_TO_CMP
 * Returns: None
 * Warnings:
@@ -726,8 +764,9 @@ void CMP_REG(BYTE REG_TO_CMP) {
 
 //START OR_OPT
 /*
-* Function:
-* Description:
+* Function: OR_OPT()
+* Description: performs a bitwise or on register A and a given register
+* -----------: then sets flags based on the result.
 * Parameters:
 * Returns:
 * Warnings:
@@ -738,10 +777,12 @@ void OR(BYTE REG_TO_OR) {
 	set_flag_z(Registers[REGISTER_A]);
 }
 //END OR_OPT
+
 //START AND_OPT
 /*
 * Function:
-* Description:
+* Description: performs a bitwise and on register A and a given register
+* -----------: then sets flags based on the result.
 * Parameters:
 * Returns:
 * Warnings:
@@ -752,10 +793,12 @@ void AND(BYTE REG_TO_AND) {
 	set_flag_z(Registers[REGISTER_A]);
 }
 //END AND_OPT
+
 //START EOR_OPT
 /*
 * Function:
-* Description:
+* Description: performs a bitwise xor on register A and a given register
+* -----------: then sets flags based on the result.
 * Parameters:
 * Returns:
 * Warnings:
@@ -766,10 +809,12 @@ void EOR(BYTE REG_TO_EOR) {
 	set_flag_z(Registers[REGISTER_A]);
 }
 //END EOR_OPT
+
 //START BT_OPT
 /*
 * Function:
-* Description:
+* Description: Performs a bit test (bitwise and) on Register A and a given register
+* -----------: then sets flags based on the result.
 * Parameters:
 * Returns:
 * Warnings:
@@ -1168,68 +1213,62 @@ void Group_1(BYTE opcode)
 	{
 		//BEGIN LDA
 		case 0x90: //LDA #
-			
-			//actually do load
 			data = fetch();//fetch data
-			//printf("|d1=%X|", data);
 			Registers[REGISTER_A] = data;
 			set_flag_n(Registers[REGISTER_A]);
 			set_flag_z(Registers[REGISTER_A]);
-			//printf("|Ra=%X|", Registers[REGISTER_A]);
-			//data = fetch();
-			//printf("|d2=%X|", data);
 			break;
 
 		case 0xA0: //LDA abs
 			address = get_addr_abs();
-			LD_REG(address, REGISTER_A);// , address);
+			LD_REG(address, REGISTER_A);
 			break;
 
 		case 0xB0: //LDA abs x
 			address = get_addr_absx();
-			LD_REG(address, REGISTER_A);// , address);
+			LD_REG(address, REGISTER_A);
 			break;
 
 		case 0xC0: //LDA abs y
 			address = get_addr_absy();
-			LD_REG(address, REGISTER_A);// , address);
+			LD_REG(address, REGISTER_A);
 			break;
 
 		case 0xD0: //LDA abs x y
 			address = get_addr_absxy();
-			LD_REG(address, REGISTER_A);// , address);
+			LD_REG(address, REGISTER_A);
 			break;
 
 		case 0xE0: //LDA ind x y 
 			address = get_addr_indxy();
-			LD_REG(address, REGISTER_A);// , address);
+			LD_REG(address, REGISTER_A);
 			break;
 		//END LDA
 
 		//START STO
 		case 0xAC://STO abs
 			address += get_addr_abs();
-			ST_REG(address, REGISTER_A);// , address);
+			ST_REG(address, REGISTER_A);
 			break;
 
 		case 0xBC://STO abs x
 			address += get_addr_absx();
-			ST_REG(address, REGISTER_A);// , address);
+			ST_REG(address, REGISTER_A);
 			break;
 
 		case 0xCC://STO abs y
 			address += get_addr_absy();
-			ST_REG(address, REGISTER_A);// , address);
+			ST_REG(address, REGISTER_A);
 			break;
 
 		case 0xDC://STO abs x y
 			address += get_addr_absxy();
-			ST_REG(address, REGISTER_A);// , address);
+			ST_REG(address, REGISTER_A);
 			break;
 
 		case 0xEC://STO ind x y
 			address += get_addr_indxy();
-			ST_REG(address, REGISTER_A);// , address);
+			ST_REG(address, REGISTER_A);
 			break;
 		//END STO
 
@@ -1553,7 +1592,7 @@ void Group_1(BYTE opcode)
 			DEC_MEM(address);
 			break;
 
-		case 0xA3://DEc	 abs x
+		case 0xA3://DEC abs x
 			address += get_addr_absx();
 			DEC_MEM(address);
 			break;
@@ -1570,7 +1609,7 @@ void Group_1(BYTE opcode)
 		//END DEC
 
 		//START DECA
-		case 0xD3:
+		case 0xD3://DECA A
 			Registers[REGISTER_A]--;
 			set_flag_n(Registers[REGISTER_A]);
 			set_flag_z(Registers[REGISTER_A]);
@@ -1600,7 +1639,7 @@ void Group_1(BYTE opcode)
 		//END RCR
 
 		//START RCRA
-		case 0xD4:
+		case 0xD4://RCRA A
 			Saved_Flags = Flags;
 			if ((Registers[REGISTER_A] & 0x01) == 0x01) {
 				Flags = Flags | FLAG_C;
@@ -1641,7 +1680,7 @@ void Group_1(BYTE opcode)
 		//END RLC
 
 		//START RLCA
-		case 0xD5:
+		case 0xD5://RLCA A
 			Saved_Flags = Flags;
 			if ((Registers[REGISTER_A] & 0x80) == 0x80) {
 				Flags = Flags | FLAG_C;
@@ -1679,10 +1718,10 @@ void Group_1(BYTE opcode)
 			address += get_addr_absxy();
 			ASL(address);
 			break;
-			//END ASL
+		//END ASL
 
-			//START ASLA
-		case 0xD6://asl a
+		//START ASLA
+		case 0xD6://ASLA A
 			//Saved_Flags = Flags;
 
 			temp_word = (Registers[REGISTER_A] << 1);
@@ -1700,36 +1739,34 @@ void Group_1(BYTE opcode)
 			set_flag_n(Registers[REGISTER_A]);
 			set_flag_z(Registers[REGISTER_A]);
 			break;
-			//END ASLA
+		//END ASLA
 
-			//START SAR
-			//note may still not work??
-		case 0x97://sar abs
+		//START SAR
+		case 0x97://SAR abs
 			address += get_addr_abs();
 			//printf("address[contents] = %X[%X]", address, Memory[address]);
 			SAR(address);
 			//printf("address[contents] = %X[%X]", address, Memory[address]);
-			
 			break;
 
-		case 0xA7://sar abs x
+		case 0xA7://SAR abs x
 			address += get_addr_absx();
 			SAR(address);
 			break;
 
-		case 0xB7://sar abs y
+		case 0xB7://SAR abs y
 			address += get_addr_absy();
 			SAR(address);
 			break;
 
-		case 0xC7://sar abs x y
+		case 0xC7://SAR abs x y
 			address += get_addr_absxy();
 			SAR(address);
 			break;
-			//END SAR
+		//END SAR
 
-			//START SARA
-		case 0xD7://SARA abs
+		//START SARA
+		case 0xD7://SARA A
 			if ((Registers[REGISTER_A] & 0x01) == 0x01) {
 				Flags = Flags | FLAG_C;
 			}
@@ -1752,7 +1789,7 @@ void Group_1(BYTE opcode)
 			COM(address);
 			break;
 
-		case 0xA8://COM ABS X
+		case 0xA8://COM ABS x
 			address += get_addr_absx();
 			COM(address);
 			break;
@@ -1762,19 +1799,19 @@ void Group_1(BYTE opcode)
 			COM(address);
 			break;
 
-		case 0xC8://COM ABS X Y
+		case 0xC8://COM ABS x y
 			address += get_addr_absxy();
 			COM(address);
 			break;
-			//END COM
+		//END COM
 
 		//START COMA
-		case 0xD8://COMA
-				  //Registers[REGISTER_A] = Registers[REGISTER_A] ^ 0xFF;
-				  //data = Registers[REGISTER_A];
+		case 0xD8://COMA A
+			//Registers[REGISTER_A] = Registers[REGISTER_A] ^ 0xFF;
+			//data = Registers[REGISTER_A];
 			temp_word = ~Registers[REGISTER_A];// data;//bit flip
-											   //temp_word = Registers[REGISTER_A] ^ 0xFF;
-											   //Registers[REGISTER_A] = (BYTE)temp_word;
+			//temp_word = Registers[REGISTER_A] ^ 0xFF;
+			//Registers[REGISTER_A] = (BYTE)temp_word;
 			if (temp_word >= 0x100)//if overflowed set flag
 			{
 				Flags = Flags | FLAG_C;
@@ -1789,23 +1826,22 @@ void Group_1(BYTE opcode)
 		//END COMA
 
 		//START RAL
-		case 0x99://ral abs
+		case 0x99://RAL abs
 			address += get_addr_abs();
 			RAL(address);
-			
 			break;
 
-		case 0xA9://ral abs x
+		case 0xA9://RAL abs x
 			address += get_addr_absx();
 			RAL(address);
 			break;
 
-		case 0xB9://ral abs y
+		case 0xB9://RAL abs y
 			address += get_addr_absy();
 			RAL(address);
 			break;
 
-		case 0xC9://ral abs x y
+		case 0xC9://RAL abs x y
 			address += get_addr_absxy();
 			RAL(address);
 			break;
@@ -1835,19 +1871,22 @@ void Group_1(BYTE opcode)
 		//END RALA
 
 		//START ROR
-		case 0x9A://ror abs
+		case 0x9A://ROR abs
 			address += get_addr_abs();
 			ROR(address);
 			break;
-		case 0xAA://ror abs x
+
+		case 0xAA://ROR abs x
 			address += get_addr_absx();
 			ROR(address);
 			break;
-		case 0xBA://ror abs y
+
+		case 0xBA://ROR abs y
 			address += get_addr_absy();
 			ROR(address);
 			break;
-		case 0xCA://ror abs x y
+
+		case 0xCA://ROR abs x y
 			address += get_addr_absxy();
 			ROR(address);
 			break;
@@ -1880,46 +1919,36 @@ void Group_1(BYTE opcode)
 		////LD IN GROUP 2
 		//END LD
 
-		//START LDX -check ldx
-		case 0x31: //LDX Immidiate
-				   //set flags n z
-				   //set_flag_n();
-				   //set_flag_Z();
-				   //actually do load
+		//START LDX
+		case 0x31://LDX #
 			data = fetch();//fetch data
-						   //printf("|d1=%X|", data);
+			//printf("|d1=%X|", data);
 			Index_Registers[REGISTER_X] = data;
 			set_flag_n(Index_Registers[REGISTER_X]);
 			set_flag_z(Index_Registers[REGISTER_X]);
-			//Index_Index_Registers[REGISTER_X] = data;
-			//set_flag_n(Index_Index_Registers[REGISTER_X]);
-			//set_flag_z(Index_Index_Registers[REGISTER_X]);
-			//printf("|Ra=%X|", Registers[REGISTER_A]);
-			//data = fetch();
-			//printf("|d2=%X|", data);
 			break;
 
-		case 0x41: //LDX abs
+		case 0x41://LDX abs
 			address += get_addr_abs();
 			LDX(address);
 			break;
 
-		case 0x51: //LDX abs x
+		case 0x51://LDX abs x
 			address += get_addr_absx();
 			LDX(address);
 			break;
 
-		case 0x61: //LDX abs y
+		case 0x61://LDX abs y
 			address += get_addr_absy();
 			LDX(address);
 			break;
 
-		case 0x71: //LDX abs x y
+		case 0x71://LDX abs x y
 			address += get_addr_absxy();
 			LDX(address);
 			break;
 
-		case 0x81: //LDX (ind),x y 
+		case 0x81://LDX (ind),x y 
 			address += get_addr_indxy();
 			LDX(address);
 			break;
@@ -1946,7 +1975,7 @@ void Group_1(BYTE opcode)
 			STX(address);
 			break;
 
-		case 0x42://STX (ind) abs X Y
+		case 0x42://STX abs X Y
 			address += get_addr_indxy();
 			STX(address);
 			break;
