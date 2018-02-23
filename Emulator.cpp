@@ -369,7 +369,20 @@ char opcode_mneumonics[][14] =
 ////////////////////////////////////////////////////////////////////////////////
 //                           Simulator/Emulator (Start)                       //
 ////////////////////////////////////////////////////////////////////////////////
-
+/*
+* Function:
+* Description:
+* Parameters:
+* Returns:
+* Warnings:
+*/
+/*
+* Function: Fetch()
+* Description: fetches the next byte using the programcounter
+* Parameters: None
+* Returns: BYTE byte
+* Warnings:
+*/
 BYTE fetch()
 {
 	BYTE byte = 0;
@@ -387,7 +400,13 @@ BYTE fetch()
 	return byte;
 }
 
-
+/*
+* Function: set_flag_i()
+* Description:sets the Interrupt flag
+* Parameters: BYTE inreg
+* Returns: None
+* Warnings:
+*/
 void set_flag_i(BYTE inReg)//interrupt//chk
 {
 	BYTE reg;
@@ -403,6 +422,13 @@ void set_flag_i(BYTE inReg)//interrupt//chk
 	}
 }
 
+/*
+* Function: set_flag_n()
+* Description:sets the Negative flag
+* Parameters: BYTE inreg
+* Returns: None
+* Warnings:
+*/
 void set_flag_n(BYTE inReg) 
 {
 	BYTE reg; 
@@ -418,6 +444,13 @@ void set_flag_n(BYTE inReg)
 	}
 }
 
+/*
+* Function: set_flag_z()
+* Description:sets the zero flag
+* Parameters: BYTE inreg
+* Returns: None
+* Warnings:
+*/
 void set_flag_z(BYTE inReg)//zero flag //chk
 {
 	BYTE reg;
@@ -433,6 +466,13 @@ void set_flag_z(BYTE inReg)//zero flag //chk
 	}
 }
 
+/*
+* Function: set_flag_n_word()
+* Description:sets the Negative flag on a word
+* Parameters: BYTE inreg
+* Returns: None
+* Warnings:
+*/
 void set_flag_n_word(WORD inReg)
 {
 	WORD reg;
@@ -448,6 +488,13 @@ void set_flag_n_word(WORD inReg)
 	}
 }
 
+/*
+* Function: set_flag_z()
+* Description:sets the Zero flag on a word
+* Parameters: BYTE inreg
+* Returns: None
+* Warnings:
+*/
 void set_flag_z_word(WORD inReg)
 {
 	WORD reg;
@@ -463,6 +510,13 @@ void set_flag_z_word(WORD inReg)
 	}
 }
 
+/*
+* Function: set_flag_c()
+* Description:sets the Carry flag
+* Parameters: BYTE inreg
+* Returns: None
+* Warnings:
+*/
 void set_flag_c(BYTE inReg)//carry flag 
 {
 	return;//
@@ -480,6 +534,13 @@ void set_flag_c(BYTE inReg)//carry flag
 
 }
 
+/*
+* Function: set_flag_v()
+* Description:sets the Overflow flag
+* Parameters: BYTE in1, BYTE in2, BYTE out1
+* Returns: None
+* Warnings:
+*/
 void set_flag_v(BYTE in1, BYTE in2, BYTE out1){
 
 	BYTE reg1in;
@@ -888,7 +949,7 @@ void DEC_MEM(WORD address) {
 //START RCR_OPT
 /*
 * Function: RCR()
-* Description:
+* Description: Rotates right through carry then sets flag based on result
 * Parameters: WORD address
 * Returns: None
 * Warnings:
@@ -917,7 +978,7 @@ void RCR(WORD address) {
 //START RLC_OPT
 /*
 * Function: RLC()
-* Description:
+* Description: Rotates left through carry then sets flag based on result
 * Parameters: WORD address
 * Returns: None
 * Warnings:
@@ -946,7 +1007,7 @@ void RLC(WORD address) {
 //START ASL_OPT
 /*
 * Function: ASL()
-* Description:
+* Description: Arithmetic shift left, shifts bits left by 1 (inc carry)then sets flags based on result
 * Parameters: WORD address
 * Returns: None
 * Warnings:
@@ -978,7 +1039,7 @@ void ASL(WORD address) {
 //NOTE - MAY NOT WORK
 /*
 * Function: SAR()
-* Description:
+* Description:Arithmetic shift right, shifts bits right by 1 (inc carry) then sets flags based on result
 * Parameters: WORD address
 * Returns: None
 * Warnings:
@@ -1002,7 +1063,7 @@ void SAR(WORD address) {
 
 //START COM_OPT
 /*
-* Function:
+* Function: COM()
 * Description: Negates memory address(1s compliment/bitflip) then sets flags based on result
 * Parameters: WORD address
 * Returns: None
@@ -1028,8 +1089,8 @@ void COM(WORD address) {
 
 //START RAL_OPT
 /*
-* Function:
-* Description:
+* Function: RAL()
+* Description: 
 * Parameters: WORD address
 * Returns: None
 * Warnings:
