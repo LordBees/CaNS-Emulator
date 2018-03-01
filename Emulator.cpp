@@ -1,4 +1,12 @@
 
+/*
+* Author: Robert Painter (17024721)
+* Created: 02/02/2018
+* Revised: 24/02/2018 - cleaned up code
+* Description: Chimera-2018-E Emulator code
+* User Advice: None
+*/
+
 #include "stdafx.h"
 #include <winsock2.h>
 
@@ -378,7 +386,7 @@ char opcode_mneumonics[][14] =
 */
 /*
 * Function: Fetch()
-* Description: fetches the next byte using the programcounter
+* Description: fetches the next byte in the program from memory using the programcounter
 * Parameters: None
 * Returns: BYTE byte
 * Warnings:
@@ -401,8 +409,8 @@ BYTE fetch()
 }
 
 /*
-* Function: set_flag_i()
-* Description:sets the Interrupt flag
+* Function: set_flag_i(BYTE inReg)
+* Description:sets the Interrupt flag if 
 * Parameters: BYTE inreg
 * Returns: None
 * Warnings:
@@ -423,8 +431,9 @@ void set_flag_i(BYTE inReg)//interrupt//chk
 }
 
 /*
-* Function: set_flag_n()
-* Description:sets the Negative flag
+* Function: set_flag_n(BYTE inReg)
+* Description: sets the Negative flag if the MSB is set
+* -----------: clears the flag if the bit is not set
 * Parameters: BYTE inreg
 * Returns: None
 * Warnings:
@@ -445,8 +454,9 @@ void set_flag_n(BYTE inReg)
 }
 
 /*
-* Function: set_flag_z()
-* Description:sets the zero flag
+* Function: set_flag_z(BYTE inReg)
+* Description:sets the zero flag if the byte is equal to 0
+* -----------: clears the flag if not equal to 0
 * Parameters: BYTE inreg
 * Returns: None
 * Warnings:
@@ -468,7 +478,8 @@ void set_flag_z(BYTE inReg)//zero flag //chk
 
 /*
 * Function: set_flag_n_word()
-* Description:sets the Negative flag on a word
+* Description:sets the Negative flag on a word if the MSB is set
+* -----------: clears the flag if the bit is not set
 * Parameters: BYTE inreg
 * Returns: None
 * Warnings:
@@ -740,7 +751,6 @@ void ADD_REG(BYTE REG_TO_ADD) {
 		Flags = Flags & (0xFF - FLAG_C);//unset
 	}
 	//Registers[REGISTER_A] = (BYTE)temp_word;
-
 	Registers[REGISTER_A] = (BYTE)temp_word;//moved to above flags
 	
 	set_flag_n((BYTE)temp_word);
@@ -1272,6 +1282,13 @@ void Group_1(BYTE opcode)
 	printf("|G1|op=%X|", opcode);
 	switch(opcode) 
 	{
+		/*
+		* LDA 
+		* loads data to register A
+		* addressing modes: [# ,abs ,absx ,absy ,absxy, indxy]
+		*
+		*/
+
 		//BEGIN LDA
 		case 0x90: //LDA #
 			data = fetch();//fetch data
@@ -1306,6 +1323,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END LDA
 
+		/*
+		* STO
+		* stores register a to a memory location
+		* addressing modes: [abs, absx, absy, absxy, indxy]
+		*
+		*/
 		//START STO
 		case 0xAC://STO abs
 			address += get_addr_abs();
@@ -1333,6 +1356,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END STO
 
+		/*
+		* ADD
+		* adds a given register to register a with carry
+		* addressing modes: [b,c,d,e,f]
+		*
+		*/
 		//START ADD
 		case 0x23://ADD A B
 			ADD_REG(REGISTER_B);
@@ -1355,6 +1384,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END ADD
 
+		/*
+		* SUB
+		* subtracts a given register from register a with carry
+		* addressing modes: [b,c,d,e,f]
+		*
+		*/
 		//START SUB
 		case 0x24://SUB A B
 			SUB_REG(REGISTER_B);
@@ -1377,6 +1412,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END SUB
 
+		/*
+		* CMP
+		* compares a given register (by subtraction) to a given register with register a
+		* addressing modes: [b,c,d,e,f]
+		*
+		*/
 		//START CMP
 		case 0x25://CMP A B
 			CMP_REG(REGISTER_B);
@@ -1399,6 +1440,13 @@ void Group_1(BYTE opcode)
 			break;
 		//END CMP
 
+
+		/*
+		* OR
+		* performs a bitwise OR on a given register with register a
+		* addressing modes: [b,c,d,e,f]
+		*
+		*/
 		//START OR
 		case 0x26://OR A B
 			OR(REGISTER_B);
@@ -1421,6 +1469,13 @@ void Group_1(BYTE opcode)
 			break;
 		//END OR
 
+
+		/*
+		* AND
+		* performs a bitwise AND on a given register with register a
+		* addressing modes: [b,c,d,e,f]
+		*
+		*/
 		//START AND
 		case 0x27://AND A B
 			AND(REGISTER_B);
@@ -1443,6 +1498,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END AND
 
+		/*
+		* EOR
+		* performs a bitwise XOR on a given register with register a
+		* addressing modes: [b,c,d,e,f]
+		*
+		*/
 		//START EOR
 		case 0x28://EOR A B
 			EOR(REGISTER_B);
@@ -1465,6 +1526,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END EOR
 
+		/*
+		* BT
+		* performs a bit test (bitwise AND) on a given register with register a
+		* addressing modes: [b,c,d,e,f]
+		*
+		*/
 		//START BT
 		case 0x29://BT A B
 			BT(REGISTER_B);
@@ -1487,6 +1554,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END BT
 
+		/*
+		* ADI
+		* adds a literal value to register a with carry
+		* addressing modes: [#]
+		*
+		*/
 		//START ADI
 		case 0x82://ADI #
 			//short temp = 0;
@@ -1511,6 +1584,13 @@ void Group_1(BYTE opcode)
 			break;
 		//END ADI
 
+
+		/*
+		* SBI
+		* subtracts a literal value to register a with carry
+		* addressing modes: [#]
+		*
+		*/
 		//START SBI
 		case 0x83://SBI #
 			param1 = Registers[REGISTER_A];
@@ -1539,6 +1619,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END SBI
 
+		/*
+		* CPI
+		* literal value compared to register a
+		* addressing modes: [#]
+		*
+		*/
 		//START CPI
 		case 0x84://CPI #
 			param1 = Registers[REGISTER_A];
@@ -1556,6 +1642,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END CPI
 
+		/*
+		* ORI
+		* literal value bitwise OR to register a
+		* addressing modes: [#]
+		*
+		*/
 		//START ORI
 		case 0x85://ORI #
 			Registers[REGISTER_A] = Registers[REGISTER_A] | fetch();
@@ -1564,6 +1656,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END ORI
 
+		/*
+		* ANI
+		* literal value bitwise AND with register a
+		* addressing modes: [#]
+		*
+		*/
 		//START ANI
 		case 0x86://ANI #
 			Registers[REGISTER_A] = Registers[REGISTER_A] & fetch();
@@ -1574,6 +1672,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END ANI
 
+		/*
+		* XRI
+		* literal value bitwise XOR with register a
+		* addressing modes: [#]
+		*
+		*/
 		//START XRI
 		case 0x87://XRI #
 			Registers[REGISTER_A] = Registers[REGISTER_A] ^ fetch();
@@ -1582,6 +1686,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END XRI
 
+		/*
+		* TST
+		* bit tests memory address
+		* addressing modes: [abs, absx, absy, absxy]
+		*
+		*/
 		//START TST
 		case 0x91://TST abs
 			address += get_addr_abs();
@@ -1604,6 +1714,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END TST
 			
+		/*
+		* TSTA
+		* bit tests register a
+		* addressing modes: [a]
+		*
+		*/
 		//START TSTA
 		case 0xD1://TSTA A
 			param1 = Registers[REGISTER_A];
@@ -1617,6 +1733,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END TSTA
 
+		/*
+		* INC
+		* increments memory address
+		* addressing modes: [abs, absx, absy, absxy]
+		*
+		*/
 		//START INC
 		case 0x92://INC abs
 			address += get_addr_abs();
@@ -1637,16 +1759,28 @@ void Group_1(BYTE opcode)
 			address += get_addr_absxy();
 			INC_MEM(address);
 			break;
-			//END INC
+		//END INC
 
-			//START INCA
+		/*
+		* INCA
+		* increments register a
+		* addressing modes: [a]
+		*
+		*/
+		//START INCA
 		case 0xD2://INCA A
 			Registers[REGISTER_A]++;
 			set_flag_n(Registers[REGISTER_A]);
 			set_flag_z(Registers[REGISTER_A]);
 			break;
-			//END INCA
+		//END INCA
 
+		/*
+		* DEC
+		* decrements memory address
+		* addressing modes: [abs, absx, absy, absxy]
+		*
+		*/
 		//START DEC
 		case 0x93://DEC abs 
 			address += get_addr_abs();
@@ -1669,6 +1803,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END DEC
 
+		/*
+		* DECA
+		* decrements register a
+		* addressing modes: [a]
+		*
+		*/
 		//START DECA
 		case 0xD3://DECA A
 			Registers[REGISTER_A]--;
@@ -1677,6 +1817,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END DECA
 
+		/*
+		* RCR
+		* rotates right through carry on a memory address
+		* addressing modes: [abs, absx, absy, absxy]
+		*
+		*/
 		//START RCR
 		case 0x94://RCR abs
 			address += get_addr_abs();
@@ -1699,6 +1845,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END RCR
 
+		/*
+		* RCRA
+		* rotates right through carry on a register a
+		* addressing modes: [a]
+		*
+		*/
 		//START RCRA
 		case 0xD4://RCRA A
 			Saved_Flags = Flags;
@@ -1718,6 +1870,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END RCRA
 
+		/*
+		* RLC
+		* rotates left through carry on a memory address
+		* addressing modes: [abs, absx, absy, absxy]
+		*
+		*/
 		//START RLC
 		case 0x95://RLC abs
 			address += get_addr_abs();
@@ -1740,6 +1898,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END RLC
 
+		/*
+		* RLCA
+		* rotates left through carry on register a
+		* addressing modes: [a]
+		*
+		*/
 		//START RLCA
 		case 0xD5://RLCA A
 			Saved_Flags = Flags;
@@ -1759,6 +1923,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END RLCA
 
+		/*
+		* ASL
+		* arithmetic shift left on a memory address
+		* addressing modes: [abs, absx, absy, absxy]
+		*
+		*/
 		//START ASL
 		case 0x96://ASL abs
 			address += get_addr_abs();
@@ -1781,6 +1951,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END ASL
 
+		/*
+		* ASLA
+		* arithmetic shift left on register a
+		* addressing modes: [a]
+		*
+		*/
 		//START ASLA
 		case 0xD6://ASLA A
 			//Saved_Flags = Flags;
@@ -1802,6 +1978,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END ASLA
 
+		/*
+		* SAR
+		* arithmetic shift right on a memory address
+		* addressing modes: [abs, absx, absy, absxy]
+		*
+		*/
 		//START SAR
 		case 0x97://SAR abs
 			address += get_addr_abs();
@@ -1826,6 +2008,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END SAR
 
+		/*
+		* SARA
+		* arithmetic shift right on a memory address
+		* addressing modes: [a]
+		*
+		*/
 		//START SARA
 		case 0xD7://SARA A
 			if ((Registers[REGISTER_A] & 0x01) == 0x01) {
@@ -1844,6 +2032,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END SARA
 
+		/*
+		* COM
+		* negate a memory address
+		* addressing modes: [abs, absx, absy, absxy]
+		*
+		*/
 		//START COM
 		case 0x98://COM abs
 			address += get_addr_abs();
@@ -1866,6 +2060,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END COM
 
+		/*
+		* COMA
+		* negate register a
+		* addressing modes: [a]
+		*
+		*/
 		//START COMA
 		case 0xD8://COMA A
 			//Registers[REGISTER_A] = Registers[REGISTER_A] ^ 0xFF;
@@ -1886,6 +2086,12 @@ void Group_1(BYTE opcode)
 			return;
 		//END COMA
 
+		/*
+		* RAL
+		* rotate left without carry on a memory address
+		* addressing modes: [abs, absx, absy, absxy]
+		*
+		*/
 		//START RAL
 		case 0x99://RAL abs
 			address += get_addr_abs();
@@ -1908,6 +2114,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END RAL
 
+		/*
+		* RALA
+		* rotate left without carry on register a
+		* addressing modes: [a]
+		*
+		*/
 		//START RALA
 		case 0xD9:
 			//Saved_Flags = Flags;
@@ -1931,6 +2143,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END RALA
 
+		/*
+		* ROR
+		* rotate right without carry on a memory address
+		* addressing modes: [abs, absx, absy, absxy]
+		*
+		*/
 		//START ROR
 		case 0x9A://ROR abs
 			address += get_addr_abs();
@@ -1953,6 +2171,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END ROR
 
+		/*
+		* RORA
+		* rotate right without carry on register a
+		* addressing modes: [a]
+		*
+		*/
 		//START RORA
 		case 0xDA://RORA A
 			//Saved_Flags = Flags;
@@ -1972,10 +2196,22 @@ void Group_1(BYTE opcode)
 			break;
 		//END RORA
 
+		/*
+		* LD
+		* rotate left without carry
+		* addressing modes: [a,b,c,d,e,f,g - a,b,c,d,e,f,g]
+		*
+		*/
 		//START LD
 		////LD IN GROUP 2
 		//END LD
 
+		/*
+		* LDX
+		* loads memory into register x
+		* addressing modes: [#, abs, absx, absy, absxy, indxy]
+		*
+		*/
 		//START LDX
 		case 0x31://LDX #
 			data = fetch();//fetch data
@@ -2011,6 +2247,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END LDX
 
+		/*
+		* STX
+		* stores register x to a memory location
+		* addressing modes: [abs, absx, absy, absxy, indxy]
+		*
+		*/
 		//START STX
 		case 0x02://STX abs
 			address += get_addr_abs();
@@ -2038,6 +2280,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END STX
 
+		/*
+		* DEX
+		* decrements register x
+		* addressing modes: [x]
+		*
+		*/
 		//START DEX
 		case 0xE1://DEX impl
 			Index_Registers[REGISTER_X]--;
@@ -2045,6 +2293,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END DEX
 
+		/*
+		* INX
+		* increments register x
+		* addressing modes: [impl]
+		*
+		*/
 		//START INX
 		case 0xE2://INX impl
 			Index_Registers[REGISTER_X]++;
@@ -2052,6 +2306,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END INX
 
+		/*
+		* DEX
+		* move accumulator to register y
+		* addressing modes: [impl]
+		*
+		*/
 		//START MAY
 		case 0x0C://MAY impl
 			Index_Registers[REGISTER_Y] = Registers[REGISTER_A];
@@ -2616,10 +2876,6 @@ void Group_1(BYTE opcode)
 
 void Group_2_Move(BYTE opcode)
 {
-	BYTE LB = 0;
-	BYTE HB = 0;
-	WORD address = 0;
-	WORD data = 0;
 
 	//printf("group2");
 	printf("|G2|op=%X|", opcode);
