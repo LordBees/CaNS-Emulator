@@ -384,6 +384,7 @@ char opcode_mneumonics[][14] =
 * Returns:
 * Warnings:
 */
+
 /*
 * Function: Fetch()
 * Description: fetches the next byte in the program from memory using the programcounter
@@ -477,7 +478,7 @@ void set_flag_z(BYTE inReg)//zero flag //chk
 }
 
 /*
-* Function: set_flag_n_word()
+* Function: set_flag_n_word(WORD inReg)
 * Description:sets the Negative flag on a word if the MSB is set
 * -----------: clears the flag if the bit is not set
 * Parameters: BYTE inreg
@@ -500,7 +501,7 @@ void set_flag_n_word(WORD inReg)
 }
 
 /*
-* Function: set_flag_z()
+* Function: set_flag_z(WORD inReg)
 * Description:sets the Zero flag on a word
 * Parameters: BYTE inreg
 * Returns: None
@@ -522,7 +523,7 @@ void set_flag_z_word(WORD inReg)
 }
 
 /*
-* Function: set_flag_c()
+* Function: set_flag_c(WORD inReg)
 * Description:sets the Carry flag
 * Parameters: BYTE inreg
 * Returns: None
@@ -546,7 +547,7 @@ void set_flag_c(BYTE inReg)//carry flag
 }
 
 /*
-* Function: set_flag_v()
+* Function: set_flag_v(BYTE in1, BYTE in2, BYTE out1)
 * Description:sets the Overflow flag
 * Parameters: BYTE in1, BYTE in2, BYTE out1
 * Returns: None
@@ -662,10 +663,10 @@ WORD get_addr_indxy() {
 	BYTE LB = 0;
 	BYTE HB = 0;
 	WORD address = 0;
-	HB = fetch();
+	HB = fetch();//get absolute address
 	LB = fetch();
 	address += (WORD)((WORD)HB << 8) + LB;
-	HB = Memory[address];
+	HB = Memory[address];//use this address to get the indirect address
 	LB = Memory[address + 1];
 	address += (WORD)((WORD)HB << 8) + LB;
 	address += Index_Registers[REGISTER_X];
@@ -685,7 +686,7 @@ WORD get_addr_indxy() {
 */
 //START LDA_OPT
 /*
-* Function: LD_REG()
+* Function: LD_REG(WORD address, BYTE REG_TO_LOAD)
 * Description: Loads a register with a location in memory
 * Parameters: (WORD) address, (BYTE) REG_TO_LOAD
 * Returns: None
@@ -707,7 +708,7 @@ void LD_REG(WORD address, BYTE REG_TO_LOAD){//, BYTE SRC){//,bool REGTOLOAD_AS_A
 
 //START STO_OPT
 /*
-* Function: ST_REG()
+* Function: ST_REG(WORD address, BYTE REG_TO_STO)
 * Description: Stores a given register in a given memory location
 * Parameters: (WORD) address,(BYTE) REG_TO_STO
 * Returns: None
@@ -725,7 +726,7 @@ void ST_REG(WORD address, BYTE REG_TO_STO) {
 
 //START ADD_OPT
 /*
-* Function: ADD_OPT()
+* Function: ADD_OPT(BYTE REG_TO_ADD)
 * Description: Add register A to a given register, then store the result in register A
 * Parameters: (BYTE) REG_TO_ADD
 * Returns: None
@@ -2198,7 +2199,7 @@ void Group_1(BYTE opcode)
 
 		/*
 		* LD
-		* rotate left without carry
+		* load register specified to register specified
 		* addressing modes: [a,b,c,d,e,f,g - a,b,c,d,e,f,g]
 		*
 		*/
@@ -2283,7 +2284,7 @@ void Group_1(BYTE opcode)
 		/*
 		* DEX
 		* decrements register x
-		* addressing modes: [x]
+		* addressing modes: [impl]
 		*
 		*/
 		//START DEX
@@ -2307,7 +2308,7 @@ void Group_1(BYTE opcode)
 		//END INX
 
 		/*
-		* DEX
+		* MAY
 		* move accumulator to register y
 		* addressing modes: [impl]
 		*
@@ -2319,6 +2320,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END MAY
 
+		/*
+		* MYA
+		* move register y to accumulator
+		* addressing modes: [impl]
+		*
+		*/
 		//START MYA
 		case 0x0D://MYA impl
 			Registers[REGISTER_A] = Index_Registers[REGISTER_Y];
@@ -2327,6 +2334,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END MYA
 
+		/*
+		* DEY
+		* decrement register y
+		* addressing modes: [impl]
+		*
+		*/
 		//START DEY
 		case 0xE3://DEY impl
 			Index_Registers[REGISTER_Y]--;
@@ -2334,6 +2347,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END DEY
 
+		/*
+		* INCY
+		* increment register y
+		* addressing modes: [impl]
+		*
+		*/
 		//START INCY
 		case 0xE4://INCY impl
 			Index_Registers[REGISTER_Y]++;
@@ -2341,6 +2360,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END INCY
 
+		/*
+		* LODS
+		* loads memory into stackpointer
+		* addressing modes: [#, abs, absx, absy, absxy, indxy]
+		*
+		*/
 		//START LODS
 		case 0x9D://LODS #
 			HB = fetch();
@@ -2376,12 +2401,24 @@ void Group_1(BYTE opcode)
 			break;
 		//END LODS
 
+		/*
+		* MAS
+		* move accumulator to Status registers
+		* addressing modes: [impl]
+		*
+		*/
 		//START MAS
 		case 0x0E://MAS impl
 			Flags = Registers[REGISTER_A];
 			break;
 		//END MAS
 
+		/*
+		* CSA
+		* move Status registers to accumulator
+		* addressing modes: [impl]
+		*
+		*/
 		//START CSA
 		case 0x0F://CSA impl
 			Registers[REGISTER_A] = Flags;
@@ -2389,8 +2426,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END CSA
 		
-
-
+		/*
+		* PUSH
+		* push register to stack
+		* addressing modes: [a,fl,b,c,d,e,f]
+		*
+		*/
 		//START PUSH
 		case 0x9E://push A
 			PUSH(REGISTER_A);
@@ -2424,6 +2465,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END PUSH
 
+		/*
+		* POP
+		* pops top of stack into a given register
+		* addressing modes: [a,FL,b,c,d,e,f]
+		*
+		*/
 		//START POP
 		case 0x9F://POP A
 			//printf("address[contents] = %X[%X]", address, Memory[address]);
@@ -2452,6 +2499,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END POP
 
+		/*
+		* LX
+		* loads memory into register pair
+		* addressing modes: [ab #]
+		*
+		*/
 		//START LX
 		case 0x9B://LX A,B #
 			HB = fetch();
@@ -2465,6 +2518,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END LX
 
+		/*
+		* JMP
+		* loads memory into programcounter
+		* addressing modes: [abs]
+		*
+		*/
 		//START JMP
 		case 0xEA://JMP impl
 			address += get_addr_abs();
@@ -2475,6 +2534,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END JMP
 
+		/*
+		* MV
+		* loads memory into register
+		* addressing modes: [b #, c #, d #, e #, f #]
+		*
+		*/
 		//START MV
 		case 0x07://MV # to B
 			MV(REGISTER_B);
@@ -2497,6 +2562,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END MV
 
+		/*
+		* JSR
+		* jump to subroutine
+		* addressing modes: [abs]
+		*
+		*/
 		//START JSR
 		case 0xE9://JSR abs
 			address = get_addr_abs();
@@ -2515,6 +2586,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END JSR
 
+		/*
+		* RTN
+		* return from subroutine
+		* addressing modes: [impl]
+		*
+		*/
 		//START RTN
 		case 0xDB://RTN impl
 			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 2)) {
@@ -2527,6 +2604,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END RTN
 
+		/*
+		* BRA
+		* branch always
+		* addressing modes: [rel]
+		*
+		*/
 		//START BRA
 		case 0xF0://BRA rel
 			//HB = fetch();
@@ -2544,6 +2627,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END BRA
 
+		/*
+		* BCC
+		* branch on carry clear
+		* addressing modes: [rel]
+		*
+		*/
 		//START BCC
 		case 0xF1://BCC rel
 			//HB = fetch();
@@ -2563,6 +2652,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END BCC
 
+		/*
+		* BCS
+		* branch on carry set
+		* addressing modes: [rel]
+		*
+		*/
 		//START BCS
 		case 0xF2://BCS rel
 			//HB = fetch();
@@ -2582,6 +2677,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END BCS
 
+		/*
+		* BNE
+		* branch on result not zero
+		* addressing modes: [rel]
+		*
+		*/
 		//START BNE
 		case 0xF3://BNE rel
 			//HB = fetch();
@@ -2601,6 +2702,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END BNE
 
+		/*
+		* BEQ
+		* branch on result not equal to zero
+		* addressing modes: [rel]
+		*
+		*/
 		//START BEQ
 		case 0xF4://BEQ rel
 			//HB = fetch();
@@ -2620,6 +2727,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END BEQ
 
+		/*
+		* BVC
+		* branch on overflow clear
+		* addressing modes: [rel]
+		*
+		*/
 		//START BVC
 		case 0xF5://BVC rel
 			//HB = fetch();
@@ -2639,6 +2752,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END BVC
 
+		/*
+		* BVS
+		* branch on overflow set
+		* addressing modes: [rel]
+		*
+		*/
 		//START BVS
 		case 0xF6://BVS rel
 			//HB = fetch();
@@ -2658,6 +2777,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END BVS
 
+		/*
+		* BMI
+		* branch on negative result
+		* addressing modes: [rel]
+		*
+		*/
 		//START BMI
 		case 0xF7://BMI rel
 			//HB = fetch();
@@ -2677,6 +2802,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END BMI
 
+		/*
+		* BRA
+		* branch on positive result
+		* addressing modes: [rel]
+		*
+		*/
 		//START BPL
 		case 0xF8://BPL rel
 			//HB = fetch();
@@ -2696,6 +2827,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END BPL
 
+		/*
+		* BGE
+		* branch branch on result less than or equal to zero
+		* addressing modes: [rel]
+		*
+		*/
 		//START BGE
 		case 0xF9://BGE rel
 			//HB = fetch();
@@ -2718,6 +2855,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END BGE
 
+		/*
+		* BLE
+		* branch on result greater than or equal to zero
+		* addressing modes: [rel]
+		*
+		*/
 		//START BLE
 		case 0xFA://BLE rel
 			//HB = fetch();
@@ -2739,6 +2882,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END BLE
 
+		/*
+		* BGT
+		* branch on result less than zero
+		* addressing modes: [rel]
+		*
+		*/
 		//START BGT
 		case 0xFB://BGT rel
 			//HB = fetch();
@@ -2763,6 +2912,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END BGT
 
+		/*
+		* BLT
+		* branch on result greater then zero
+		* addressing modes: [rel]
+		*
+		*/
 		//START BLT
 		case 0xFC://BLT rel
 			//HB = fetch();
@@ -2783,47 +2938,95 @@ void Group_1(BYTE opcode)
 			break;
 		//END BLT
 
+		/*
+		* CLC
+		* clear carry flag
+		* addressing modes: [impl]
+		*
+		*/
 		//START CLC
 		case 0x18://CLC impl
 			Flags = Flags & (0xFF - FLAG_C);
 			break;
 		//END CLC
 
+		/*
+		* SEC
+		* set carry flag
+		* addressing modes: [impl]
+		*
+		*/
 		//START SEC
 		case 0x19://SEC impl
 			Flags = Flags | FLAG_C;
 			break;
 		//END SEC
 		
+		/*
+		* CLI
+		* clear interrupt flag
+		* addressing modes: [impl]
+		*
+		*/
 		//START CLI
 		case 0x1A://CLI impl
 			Flags = Flags & (0xFF - FLAG_I);
 			break;
 		//END CLI
 
+		/*
+		* STI
+		* set interrupt flag
+		* addressing modes: [impl]
+		*
+		*/
 		//START STI
 		case 0x1B://STI impl
 			Flags = Flags | FLAG_I;
 			break;
 		//END STI
 
+		/*
+		* STV
+		* set overflow flag
+		* addressing modes: [impl]
+		*
+		*/
 		//START STV
 		case 0x1C://STV impl
 			Flags = Flags | FLAG_V;
 			break;
 		//END STV
 
+		/*
+		* CLV
+		* clear overflow flag
+		* addressing modes: [impl]
+		*
+		*/
 		//START CLV
 		case 0x1D://CLV impl
 			Flags = Flags & (0xFF - FLAG_V);
 			break;
 		//END CLV
 
+		/*
+		* NOP
+		* no operation
+		* addressing modes: [impl]
+		*
+		*/
 		//START NOP
 		case 0x73://NOP impl
 			break;
 		//END NOP
 
+		/*
+		* HLT
+		* halt
+		* addressing modes: [impl]
+		*
+		*/
 		//START HLT
 		case 0x74://HLT impl
 			halt = true;
@@ -2831,6 +3034,12 @@ void Group_1(BYTE opcode)
 			break;
 		//END HLT
 
+		/*
+		* SWI
+		* software interrupt
+		* addressing modes: [impl]
+		*
+		*/
 		//START SWI
 		case 0x16://SWI impl
 			if ((StackPointer >= 7) && (StackPointer < MEMORY_SIZE)) {
@@ -2851,6 +3060,12 @@ void Group_1(BYTE opcode)
 			}
 		//END SWI
 
+		/*
+		* RTI
+		* return form interrupt
+		* addressing modes: [impl]
+		*
+		*/
 		//START RTI
 		case 0x17://SWI impl
 			if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 1)) {
@@ -2876,12 +3091,10 @@ void Group_1(BYTE opcode)
 
 void Group_2_Move(BYTE opcode)
 {
-
 	//printf("group2");
 	printf("|G2|op=%X|", opcode);
 	switch(opcode) 
 	{
-		
 	//START LD
 		//A
 	case 0x2A:
@@ -2997,11 +3210,7 @@ void Group_2_Move(BYTE opcode)
 	case 0x7F:
 		Registers[REGISTER_F] = Registers[REGISTER_F];
 		break;
-
 	//END LD
-
-
-	
 	}
 }
 
