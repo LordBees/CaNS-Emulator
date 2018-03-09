@@ -3,6 +3,8 @@
 * Author: Robert Painter (17024721)
 * Created: 02/02/2018
 * Revised: 24/02/2018 - cleaned up code
+* Revised: 09/03/2018 - cleaned up code and added comments and banners 
+* so that it prints properly
 * Description: Chimera-2018-E Emulator code
 * User Advice: None
 */
@@ -411,7 +413,7 @@ BYTE fetch()
 
 /*
 * Function: set_flag_i(BYTE inReg)
-* Description:sets the Interrupt flag if 
+* Description:sets the Interrupt flag if bit set not in use
 * Parameters: BYTE inreg
 * Returns: None
 * Warnings:
@@ -576,12 +578,14 @@ void set_flag_v(BYTE in1, BYTE in2, BYTE out1){
 
 ////START FUNCTIONS
 //START ADDRESS RETRIEVAL
+/*
 WORD get_addr_word() {
 	BYTE LB = 0;
 	BYTE HB = 0;
 	WORD address = 0;
 	return 0;
 }
+*/
 
 /*
 * Function: get_addr_abs()
@@ -599,6 +603,7 @@ WORD get_addr_abs() {
 	address += (WORD)((WORD)HB << 8) + LB;
 	return address;
 }
+
 /*
 * Function: get_addr_absx()
 * Description: gets the absolute address offset by register X
@@ -616,6 +621,7 @@ WORD get_addr_absx() {
 	address += (WORD)((WORD)HB << 8) + LB;
 	return address;
 }
+
 /*
 * Function: get_addr_absy()
 * Description: gets the absolute address offset by register Y
@@ -633,6 +639,7 @@ WORD get_addr_absy() {
 	address += (WORD)((WORD)HB << 8) + LB;
 	return address;
 }
+
 /*
 * Function: get_addr_absxy()
 * Description: gets the absolute address offset by register X and register Y
@@ -650,6 +657,7 @@ WORD get_addr_absxy() {
 	address += (WORD)((WORD)HB << 8) + LB;
 	return address;
 }
+
 /*
 * Function: get_addr_indxy()
 * Description: gets the indirect address by 
@@ -676,7 +684,6 @@ WORD get_addr_indxy() {
 //END ADDRESS RETRIEVAL
 
 //MAIN_OPT
-
 /*
 * Function:
 * Description:
@@ -692,16 +699,16 @@ WORD get_addr_indxy() {
 * Returns: None
 * Warnings: None
 */
-void LD_REG(WORD address, BYTE REG_TO_LOAD){//, BYTE SRC){//,bool REGTOLOAD_AS_ADDRESS) {
+void LD_REG(WORD address, BYTE REG_TO_LOAD){	//, BYTE SRC){//,bool REGTOLOAD_AS_ADDRESS) {
 	if ((address >= 0) && (address < MEMORY_SIZE)) {
 		//if (REGTOLOAD_AS_ADDRESS) {
 		//	Memory[address] = SRC;
 		//}
 		//else {
-			Registers[REG_TO_LOAD] = Memory[address];
+			Registers[REG_TO_LOAD] = Memory[address];//load memory to register
 		//}
 	}
-	set_flag_n(Registers[REG_TO_LOAD]);
+	set_flag_n(Registers[REG_TO_LOAD]);//set flags
 	set_flag_z(Registers[REG_TO_LOAD]);
 }
 //END LDA_OPT
@@ -716,10 +723,10 @@ void LD_REG(WORD address, BYTE REG_TO_LOAD){//, BYTE SRC){//,bool REGTOLOAD_AS_A
 */
 void ST_REG(WORD address, BYTE REG_TO_STO) {
 	if (address >= 0 && address < MEMORY_SIZE) {
-		Memory[address] = Registers[REG_TO_STO];
+		Memory[address] = Registers[REG_TO_STO];//store register in memory
 	}
 
-	set_flag_n(Registers[REG_TO_STO]);
+	set_flag_n(Registers[REG_TO_STO]);//set flags
 	set_flag_z(Registers[REG_TO_STO]);
 }
 //END STO_OPT
@@ -744,27 +751,28 @@ void ADD_REG(BYTE REG_TO_ADD) {
 	if ((Flags & FLAG_C) != 0) {//check for carry flag, if so add 1
 		temp_word++;
 	}
-	if (temp_word >= 0x100)//if overflowed set flag
+	if (temp_word >= 0x100)//if overflowed set flag else unset
 	{
-		Flags = Flags | FLAG_C;//set
+		Flags = Flags | FLAG_C;
 	}
 	else {
-		Flags = Flags & (0xFF - FLAG_C);//unset
+		Flags = Flags & (0xFF - FLAG_C);
 	}
 	//Registers[REGISTER_A] = (BYTE)temp_word;
-	Registers[REGISTER_A] = (BYTE)temp_word;//moved to above flags
+	Registers[REGISTER_A] = (BYTE)temp_word;// assign to register
 	
-	set_flag_n((BYTE)temp_word);
+	set_flag_n((BYTE)temp_word);//set flags
 	set_flag_z((BYTE)temp_word);
 	set_flag_v(param1, param2, (BYTE)temp_word);
 	//set_flag_c(Registers[REGISTER_A]);
 
 	
 }
-//START SUB_OPT
+//END ADD_OPT
 
+//START SUB_OPT
 /*
-* Function: SUB_OPT()
+* Function: SUB_OPT(BYTE REG_TO_SUB)
 * Description: Subtract a given register from register A, then store the result in register A
 * Parameters: (BYTE) REG_TO_ADD
 * Returns: None
@@ -784,16 +792,16 @@ void SUB_REG(BYTE REG_TO_SUB) {
 	if ((Flags & FLAG_C) != 0) {
 		temp_word--;
 	}
-	if (temp_word >= 0x100)//if overflowed set flag
+	if (temp_word >= 0x100)//if overflowed set flag else unset
 	{
 		Flags = Flags | FLAG_C;
 	}
 	else {
 		Flags = Flags & (0xFF - FLAG_C);
 	}
-	Registers[REGISTER_A] = (BYTE)temp_word;
+	Registers[REGISTER_A] = (BYTE)temp_word; //assign to register
 
-	set_flag_n((BYTE)temp_word);
+	set_flag_n((BYTE)temp_word);//set flags
 	set_flag_z((BYTE)temp_word);
 	set_flag_v(param1, -param2, (BYTE)temp_word);
 	//set_flag_c(Registers[REGISTER_A]);
@@ -803,7 +811,7 @@ void SUB_REG(BYTE REG_TO_SUB) {
 
 //START COMPARE_OPT
 /*
-* Function: CMP_REG()
+* Function: CMP_REG(BYTE REG_TO_CMP)
 * Description: Compares a given register to register A (subtraction)
 * -----------: then sets flags based on the result.
 * Parameters: BYTE REG_TO_CMP
@@ -817,7 +825,7 @@ void CMP_REG(BYTE REG_TO_CMP) {
 	
 	param1 = (BYTE)Registers[REGISTER_A];
 	param2 = (BYTE)Registers[REG_TO_CMP];
-	temp_word = (WORD)param1 - (WORD)param2;
+	temp_word = (WORD)param1 - (WORD)param2; //compare  the result then set flags based on the result
 	
 	if (temp_word >= 0x100) {
 		Flags = Flags | FLAG_C;
@@ -835,7 +843,7 @@ void CMP_REG(BYTE REG_TO_CMP) {
 
 //START OR_OPT
 /*
-* Function: OR()
+* Function: OR(BYTE REG_TO_OR)
 * Description: performs a bitwise or on register A and a given register
 * -----------: then sets flags based on the result.
 * Parameters: BYTE REG_TO_OR
@@ -843,7 +851,7 @@ void CMP_REG(BYTE REG_TO_CMP) {
 * Warnings:
 */
 void OR(BYTE REG_TO_OR) {
-	Registers[REGISTER_A] = Registers[REGISTER_A] | Registers[REG_TO_OR];
+	Registers[REGISTER_A] = Registers[REGISTER_A] | Registers[REG_TO_OR];// logical or then set flags
 	set_flag_n(Registers[REGISTER_A]);
 	set_flag_z(Registers[REGISTER_A]);
 }
@@ -851,7 +859,7 @@ void OR(BYTE REG_TO_OR) {
 
 //START AND_OPT
 /*
-* Function: AND()
+* Function: AND(BYTE REG_TO_AND)
 * Description: performs a bitwise and on register A and a given register
 * -----------: then sets flags based on the result.
 * Parameters: BYTE REG_TO_AND
@@ -859,7 +867,7 @@ void OR(BYTE REG_TO_OR) {
 * Warnings:
 */
 void AND(BYTE REG_TO_AND) {
-	Registers[REGISTER_A] = Registers[REGISTER_A] & Registers[REG_TO_AND];
+	Registers[REGISTER_A] = Registers[REGISTER_A] & Registers[REG_TO_AND];// logical and then set flags
 	set_flag_n(Registers[REGISTER_A]);
 	set_flag_z(Registers[REGISTER_A]);
 }
@@ -867,7 +875,7 @@ void AND(BYTE REG_TO_AND) {
 
 //START EOR_OPT
 /*
-* Function: EOR()
+* Function: EOR(BYTE REG_TO_EOR)
 * Description: performs a bitwise xor on register A and a given register
 * -----------: then sets flags based on the result.
 * Parameters: BYTE REG_TO_EOR
@@ -883,7 +891,7 @@ void EOR(BYTE REG_TO_EOR) {
 
 //START BT_OPT
 /*
-* Function: BT()
+* Function: BT(BYTE REG_TO_BT)
 * Description: Performs a bit test (bitwise and) on Register A and a given register
 * -----------: then sets flags based on the result.
 * Parameters: BYTE REG_TO_BT
@@ -892,7 +900,7 @@ void EOR(BYTE REG_TO_EOR) {
 */
 void BT(BYTE REG_TO_BT) {
 	BYTE data;
-	data = Registers[REGISTER_A] & Registers[REG_TO_BT];
+	data = Registers[REGISTER_A] & Registers[REG_TO_BT]; //logical and then set flags
 	//printf("|a/b %X&%X|", Registers[REGISTER_A], Registers[REGISTER_B]);
 	set_flag_n(data);
 	set_flag_z(data);
@@ -901,7 +909,7 @@ void BT(BYTE REG_TO_BT) {
 
 //START TST_OPT
 /*
-* Function: TST()
+* Function: TST(WORD address)
 * Description: Bit tests an address in memory (subtract 0 from data in address)
 * -----------: then stores the result in the memory location and sets flags based on the result.
 * Parameters: (WORD) address
@@ -925,7 +933,7 @@ void TST(WORD address) {
 
 //START INC_OPT
 /*
-* Function: INC_MEM()
+* Function: INC_MEM(WORD address)
 * Description: Increments a memory location, then sets flags based on the result
 * Parameters: WORD address
 * Returns: None
@@ -942,7 +950,7 @@ void INC_MEM(WORD address) {
 
 //START DEC_OPT
 /*
-* Function: DEC_MEM()
+* Function: DEC_MEM(WORD address)
 * Description: Decrements a memory location, then sets flags based on the result
 * Parameters: WORD address
 * Returns: None
@@ -959,7 +967,7 @@ void DEC_MEM(WORD address) {
 
 //START RCR_OPT
 /*
-* Function: RCR()
+* Function: RCR(WORD address)
 * Description: Rotates right through carry then sets flag based on result
 * Parameters: WORD address
 * Returns: None
@@ -988,7 +996,7 @@ void RCR(WORD address) {
 
 //START RLC_OPT
 /*
-* Function: RLC()
+* Function: RLC(WORD address)
 * Description: Rotates left through carry then sets flag based on result
 * Parameters: WORD address
 * Returns: None
@@ -1017,7 +1025,7 @@ void RLC(WORD address) {
 
 //START ASL_OPT
 /*
-* Function: ASL()
+* Function: ASL(WORD address)
 * Description: Arithmetic shift left, shifts bits left by 1 (inc carry)then sets flags based on result
 * Parameters: WORD address
 * Returns: None
@@ -1049,7 +1057,7 @@ void ASL(WORD address) {
 //START SAR_OPT
 //NOTE - MAY NOT WORK
 /*
-* Function: SAR()
+* Function: SAR(WORD address)
 * Description:Arithmetic shift right, shifts bits right by 1 (inc carry) then sets flags based on result
 * Parameters: WORD address
 * Returns: None
@@ -1074,7 +1082,7 @@ void SAR(WORD address) {
 
 //START COM_OPT
 /*
-* Function: COM()
+* Function: COM(WORD address)
 * Description: Negates memory address(1s compliment/bitflip) then sets flags based on result
 * Parameters: WORD address
 * Returns: None
@@ -1100,8 +1108,8 @@ void COM(WORD address) {
 
 //START RAL_OPT
 /*
-* Function: RAL()
-* Description: 
+* Function: RAL(WORD address)
+* Description: rotate arithmetic left on a given menory address without carry
 * Parameters: WORD address
 * Returns: None
 * Warnings:
@@ -1131,8 +1139,8 @@ void RAL(WORD address) {
 
 //START ROR_OPT
 /*
-* Function:
-* Description:
+* Function: ROR(WORD address)
+* Description: rotate right without carry on a given memory address
 * Parameters: WORD address
 * Returns: None
 * Warnings:
@@ -1160,8 +1168,8 @@ void ROR(WORD address) {
 
 //START LDX_OPT
 /*
-* Function:
-* Description:
+* Function: LDX(WORD address)
+* Description: load memory into register x from a give memory address
 * Parameters: WORD address
 * Returns: None
 * Warnings:
@@ -1180,8 +1188,8 @@ void LDX(WORD address) {
 
 //START STX_OPT
 /*
-* Function:
-* Description:
+* Function: STX(WORD address)
+* Description: stores register x into memory
 * Parameters: WORD address
 * Returns: None
 * Warnings:
@@ -1200,8 +1208,8 @@ void STX(WORD address) {
 
 //START LODS_OPT
 /*
-* Function:
-* Description:
+* Function: LODS(WORD address)
+* Description: loads a given memory address into the accumulator
 * Parameters: WORD address
 * Returns: None
 * Warnings:
@@ -1218,8 +1226,8 @@ void LODS(WORD address) {
 
 //START PUSH_OPT
 /*
-* Function:
-* Description:
+* Function: PUSH(BYTE REG_TO_PUSH)
+* Description: push a given register onto the stack
 * Parameters: BYTE REG_TO_PUSH
 * Returns: None
 * Warnings:
@@ -1234,8 +1242,8 @@ void PUSH(BYTE REG_TO_PUSH) {
 
 //START POP_OPT
 /*
-* Function:
-* Description:
+* Function:  POP(BYTE REG_TO_POP)
+* Description: pop s the top of the stack to a given register
 * Parameters: BYTE REG_TO_POP
 * Returns: None
 * Warnings:
@@ -1250,8 +1258,8 @@ void POP(BYTE REG_TO_POP) {
 
 //START MV_OPT
 /*
-* Function:
-* Description: 
+* Function: MV(BYTE REG_TO_MV)
+* Description: load a given memory loacatoion into a register
 * Parameters: BYTE REG_TO_MV
 * Returns: None
 * Warnings:
@@ -1441,7 +1449,6 @@ void Group_1(BYTE opcode)
 			break;
 		//END CMP
 
-
 		/*
 		* OR
 		* performs a bitwise OR on a given register with register a
@@ -1469,7 +1476,6 @@ void Group_1(BYTE opcode)
 			OR(REGISTER_F);
 			break;
 		//END OR
-
 
 		/*
 		* AND
@@ -1584,7 +1590,6 @@ void Group_1(BYTE opcode)
 			//Registers[REGISTER_A] = (BYTE)temp_word;
 			break;
 		//END ADI
-
 
 		/*
 		* SBI
@@ -3096,6 +3101,12 @@ void Group_2_Move(BYTE opcode)
 	switch(opcode) 
 	{
 	//START LD
+	/*
+	* LD
+	* transfer one register to another
+	* addressing modes: [a, b, c, d, e, f,- a, b, c, d, e, f]
+	*
+	*/
 		//A
 	case 0x2A:
 		Registers[REGISTER_A] = Registers[REGISTER_A];
